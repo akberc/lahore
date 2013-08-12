@@ -1,0 +1,150 @@
+<project name="Lahore" basedir="." default="publish">
+
+    <property file="build.properties" />
+    <property name="ceylon.verbosity" value="false"/>
+    <property name="ceylon.executable" value="${user.home}/work/ceylon-0.6/bin/ceylon"/>
+    <property name="out.repo" location="modules"/>
+    <property name="deps.repo" location="test-deps"/>
+    <property name="test.repo" location="modules"/>
+
+    <!-- Local repository -->
+    <property name="ceylon.repo.dir" location="${user.home}/.ceylon/repo" />
+    
+    <path id="ant-tasks">
+        <pathelement location="${ceylon.ant.lib}"/>
+    </path>
+    
+    <typedef resource="com/redhat/ceylon/ant/antlib.xml" classpathref="ant-tasks"/>
+
+    <reposet id="reposet.compile.test">
+        <repo url="${out.repo}"/>
+        <repo url="${deps.repo}"/><!-- Needed for h2.jar dep of test.ceylon.dbc -->
+    </reposet>
+    
+    <reposet id="reposet.run.test">
+        <reposet refid="reposet.compile.test"/>
+        <repo url="${test.repo}"/>
+    </reposet>
+    
+    <moduleset id="modules.lahore.jvm">
+        <sourcemodules dir="source"/>
+    </moduleset>
+    
+    <moduleset id="modules.lahore.js">
+       <!-- <module name="com.dgwave.lahore.help"/> -->
+    </moduleset>
+    
+    <moduleset id="modules.test.jvm">
+        <!-- module name="com.dgwave.lahore.core.test"/ -->
+    </moduleset>
+    
+    <moduleset id="modules.test.js">
+        <!--<module name="test.ceylon.dbc"/>-->
+    </moduleset>
+    
+    <target name="clean"
+        description="Deletes the test-modules and modules directories">
+        <delete dir="${out.repo}"/>
+        <delete dir="${test.repo}"/>
+    </target>
+    
+    <target name="compile-jvm">
+        
+        <ceylon-compile executable="${ceylon.executable}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8">
+            <moduleset refid="modules.lahore.jvm"/>
+        </ceylon-compile>
+        
+    </target>
+
+    <target name="compile-js">
+        
+        <ceylon-compile-js executable="${ceylon.executable}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8">
+            <moduleset refid="modules.lahore.js"/>
+        </ceylon-compile-js>
+        
+    </target>
+    
+	<!-- TODO: add , compile-js" -->
+    <target name="compile" depends="compile-jvm"
+            description="Compiles the Lahore modules to the 'modules' repository" />
+
+    <target name="compile-test-jvm" depends="compile-jvm">
+        
+        <ceylon-compile executable="${ceylon.executable}"
+            src="test-source"
+            out="${test.repo}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8">
+            <reposet refid="reposet.compile.test"/> 
+            <moduleset refid="modules.test.jvm"/>
+        </ceylon-compile>
+        
+    </target>
+
+    <target name="compile-test-js" depends="compile-js">
+        
+        <ceylon-compile-js executable="${ceylon.executable}"
+            src="test-source"
+            out="${test.repo}"
+            verbose="${ceylon.verbosity}"
+            encoding="UTF-8">
+            <reposet refid="reposet.compile.test"/>
+            <moduleset refid="modules.test.js"/>
+        </ceylon-compile-js>
+        
+    </target>
+            
+    <target name="compile-test" depends="compile,compile-test-jvm"
+        description="Compiles the test modules to the 'test-modules' repository" />
+
+    <target name="test-jvm" depends="compile-test-jvm"
+        description="Runs the compiled test modules from the 'test-modules' repository">
+        <!-- TODO support verbose attr on ceylon-run command -->
+        <ceylon-run module="com.dgwave.lahore.core.test/${lahore.version}" run="com.dgwave.lahore.core.test.run"
+            executable="${ceylon.executable}">
+            <reposet refid="reposet.run.test"/>
+        </ceylon-run>
+    </target>
+
+    <target name="test-js" depends="compile-test-js">
+    	<!--
+        <ceylon-run module="com.dgwave.lahore.core.test/${lahore.version}" run="com.dgwave.lahore.core.test.run"
+            executable="${ceylon.executable}">
+            <reposet refid="reposet.run.test"/>
+        </ceylon-run>
+        -->
+    </target>
+
+    <target name="test" depends="compile-test,test-jvm,test-js"
+        description="Runs the compiled test modules from the 'test-modules' repository" />
+
+    <target name="doc" 
+            description="Documents the Lahore modules to the 'modules' repository">
+        
+        <ceylon-doc executable="${ceylon.executable}"
+            includesourcecode="true"
+            nomtimecheck="true"
+            encoding="UTF-8">
+            <moduleset refid="modules.lahore.jvm"/>
+        </ceylon-doc>
+        
+    </target>
+
+    <target name="publish" depends="compile"
+            description="Copies the Lahore modules to the user's repository">
+        <copy todir="${ceylon.repo.dir}" overwrite="true">
+            <fileset dir="${out.repo}">
+            	<include name="com/dgwave/lahore/api/**"/>
+                <include name="com/dgwave/lahore/core/**"/>
+            	<include name="com/dgwave/lahore/ext/**"/>
+            	<include name="com/dgwave/lahore/help/**"/>
+            	<include name="com/dgwave/lahore/menu/**"/>
+            	<include name="com/dgwave/lahore/system/**"/>
+            </fileset>
+        </copy>
+    </target>
+</project>
