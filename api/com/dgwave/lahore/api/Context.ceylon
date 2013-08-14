@@ -25,8 +25,7 @@ shared interface Config satisfies Storable {
 }
 
 " This should be injectable into plugin providers"
-shared interface Context satisfies Hooked {	
-	shared formal Config config; // plugin config as configured for the site in the context	
+shared interface Context {
 	shared default String? contextParam(String name) { return null;}
 	shared default String? queryParam(String name) { return null;}	
 	shared default String? pathParam(String placeHolder) { return null;}	
@@ -35,7 +34,9 @@ shared interface Context satisfies Hooked {
 		
 	"Plugins should always get storage references: plugin or site-level is dependent on Site"
 	shared formal Storage<Entity> entityStorage;	
-	shared formal Storage<Config> configStorage; 	
+	shared formal Storage<Config> configStorage;
+	
+	shared formal Context withCallScope(String string, Assocable arg);
 }
 
 shared interface Storage<Element> {

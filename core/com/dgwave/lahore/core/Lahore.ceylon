@@ -6,7 +6,7 @@ import ceylon.io { newOpenFile }
 import ceylon.io.buffer { ByteBuffer, newByteBuffer }
 import ceylon.net.http { contentType, contentLength, get }
 import ceylon.io.charset { utf8 }
-import com.dgwave.lahore.api { watchdog, Context, Storage, Entity, Config }
+import com.dgwave.lahore.api { watchdog, Context, Storage, Entity, Config, Assocable }
 import ceylon.collection { HashMap }
 import com.dgwave.lahore.core.component { SqlStorage, fileStorage, SystemConfig, AssocConfig, plugins }
 
@@ -53,10 +53,10 @@ object lahore {
 			home.absolutePath.childPath("data").uriString); // default value
 		configURI = configURI.replace("{lahore.home}", home.uriString); // replace placeholder
     	shared actual Storage<Entity> entityStorage = SqlStorage(parsePath(dataURI));
-    	
-    	shared actual Config config => bootConfig;
-    	
+    	    	
     	shared actual Path staticResourcePath(String type, String name) { return home.childPath("static").childPath(name + "." + type);}
+
+    	shared actual Context withCallScope(String string, Assocable arg)  {return this;}    	
 	}
 
     shared void boot() {

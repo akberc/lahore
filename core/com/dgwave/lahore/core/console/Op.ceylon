@@ -1,11 +1,7 @@
+import com.dgwave.lahore.api { Task }
 by ("Matej Lazar")
 doc ("Adapted from Openshift Ceylon template by Matej Lazar")
-shared interface Task {
-    shared formal String id;
-    shared formal String message;
-    shared formal variable Boolean done;
 
-}
 
 class DefaultTask(message, id, done = false) satisfies Task {
     shared actual variable Boolean done;

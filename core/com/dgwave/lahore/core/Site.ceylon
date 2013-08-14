@@ -1,4 +1,4 @@
-import com.dgwave.lahore.api { Context, Result, WebContext, Storage, Theme, Entity, Hook, Plugin, Config }
+import com.dgwave.lahore.api { ... }
 import ceylon.net.http.server { Request, Response, Matcher }
 import ceylon.net.http { HttpMethod = Method }
 import ceylon.file { Path, parsePath }
@@ -56,7 +56,7 @@ shared class DefaultWebContext(Context fromContext,  theme, config)
 	shared actual Storage<Config> configStorage = fromContext.configStorage;
 	shared actual Storage<Entity> entityStorage = fromContext.entityStorage;
 	shared actual Theme theme;
-	shared actual Config config;	
+	shared Config config;	
 	
 	shared actual Entity? entity {
 		Object? o = get("entity");
@@ -127,31 +127,23 @@ shared class DefaultWebContext(Context fromContext,  theme, config)
 			put(mapItem, newMap);
 		}
 	}
+
+	shared actual Context withCallScope(String key, Assocable arg) {
+		return fromContext.withCallScope(key, arg);
+	}
 	
-	// Hook Handlers
-	shared actual Result hook(String pluginId, String hookName, [String] args) {
-		
-		Hook? hook = hookFor(pluginId);
-		if (exists hook) {
-			//if (is HookWrapper hook) {
-		 // 		if (hookName == "help") {
-			//		return hook.invokehelp(args[0], [""]);
-			//	}
-			//}
-		} 
-		return null;
-	 }
 }
 
 
 doc("A simple Web route")
-shared class WebRoute(pluginId, String routeName, [String+] routeMethods, String routePath, Method<Plugin,Result,[Context]> routeProducer, String? routerPermission = null) {
+shared class WebRoute(pluginId, String routeName, Methods[] routeMethods, String routePath, 
+	Method<Plugin,Result,[Context]> routeProducer, String? routerPermission = null) {
 	
 	shared String pluginId;
 
 	shared String name = routeName;
 	
-	shared [String+] methods = routeMethods;
+	shared Methods[] methods = routeMethods;
 	
 	shared String path = routePath;
 	

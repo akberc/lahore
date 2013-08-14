@@ -1,16 +1,5 @@
 import ceylon.math.float { ceiling }
-import com.dgwave.lahore.core.component { lahoreLog, plugins }
-
-shared object noHook satisfies Hook {} // default implementation
-
-shared Plugin? plugin(String id) {
-	return plugins.findPlugin(id);
-}
-
-// TODO re-factor this
-shared {Assoc*} getPluginAdminTasks(String pluginId) {
-	return plugins.adminTasks(pluginId);
-}
+import com.dgwave.lahore.core.component { lahoreLog}
 
 shared Array array (Assocable* vars) {
 
@@ -22,7 +11,7 @@ shared Assoc assoc (Entry<String, Assocable>* vars) {
 }
 
 shared Result result (Assoc | {Fragment+} | {Entity+} routeOutput) {
-	return routeOutput;
+	return  routeOutput;
 }
 
 shared void watchdog(Integer severity, String from, String message) {

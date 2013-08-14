@@ -1,29 +1,30 @@
 import com.dgwave.lahore.api { ... }
-import com.dgwave.lahore.menu { Menu, MenuHook }
+import com.dgwave.lahore.menu { Menu, MenuContribution }
 
 id("help")
 name("Help")
 description("Manages the display of online help.")
-shared class HelpPlugin() satisfies Plugin & MenuHook & HelpHook & TemplateHook {
+shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContribution & TemplateContribution {
 	
-	HelpController ctl1 = HelpController();
-	ctl1.plugin = this;
+	shared actual Runtime plugin;
 	
-	route("help_main", "GET", "admin/help", "access administration pages")
+	HelpController ctl1 = HelpController(plugin);
+	
+	methods(httpGET)
+	route("help_main", "admin/help")
+	permission("access administration pages")
 	shared Result helpMain(Context c) => ctl1.helpMain(c);
 
-	route("help_page", "GET", "admin/help/{name}", "access administration pages")
+	methods(httpGET)
+	route("help_page", "admin/help/{name}")
+	permission("access administration pages")
 	shared Result helpPage(Context c) => ctl1.helpPage(c);
 
 	
-	/**
-	 * Implements hook_help().
-	 */
-	//implementing its own hook
+	"Contributes to help"
 	shared actual Result help(String path, String[]? args)  {
-		 Plugin? p = plugin("node");
 		 variable Li optional = Li("");
-         if (exists p) {
+         if (plugin.another("node")) {
       		optional = Li(t("<strong>Start posting content</strong> Finally, you can <a href=\"@content\">add new content</a> for your website.", 
       			{"@content" -> url("node/add")}));
          }
@@ -62,30 +63,32 @@ shared class HelpPlugin() satisfies Plugin & MenuHook & HelpHook & TemplateHook 
 		return null;
 	}		
 
-/**
-Menu Hook implementations
-*/
+	
+	"Contributes to menu deletion"
 	shared actual Result menuDelete(Menu menu) {
 		return null;
 	}
-	
+
+	"Contributes to menu insertion"	
 	shared actual Result menuInsert(Menu menu)  {
 		return null;
 	}
 	
+	"Contributes to menu updates"
 	shared actual Result menuUpdate(Menu menu)  {
 		return null;
 	}
-
+	
+	"Contributes to template pre-processing for blocks"
 	shared actual String[] preProcessBlock(String[] variables) {
 		return ["b"];
 	}
 
 
-} // class
+}
 
 
-shared interface HelpHook satisfies Hook {
+shared interface HelpContribution satisfies Contribution {
 
 	shared default Result help(String path, String[]? args) {return null;}
 

@@ -1,22 +1,28 @@
 import ceylon.collection { HashMap, LinkedList, HashSet }
 import ceylon.language.model { type, Method, modules }
-import ceylon.language.model.declaration { InterfaceDeclaration, OpenParameterisedType, FunctionDeclaration, ClassDeclaration, Package, Module }
-import com.dgwave.lahore.api { Array, Assoc, Plugin, watchdog, Name, Description, RouteAnnotation, Result, Context, Id, Configure, pluginScope}
-import com.dgwave.lahore.core { WebRoute, ContextualPlugin, PluginInfo}
+import ceylon.language.model.declaration { ... }
+import com.dgwave.lahore.api { ... }
+import com.dgwave.lahore.core { WebRoute, PluginInfoImpl, PluginImpl, ContributionImpl}
 
 class Plugins() {
 
 	doc("Plugin:identifier to plugin info")
-	value pluginInfos = HashMap<String, PluginInfo>();
+	value pluginInfos = HashMap<String, PluginInfoImpl>();
 
 	doc("Plugin:identifier to contextual plugin")
-	value pluginFinals = HashMap<String, ContextualPlugin>();
+	value pluginFinals = HashMap<String, PluginImpl>();
 		
 	doc("Plugin:identifier to Route object map")
 	value pluginRoutes = HashMap<String, WebRoute>();
 
-	doc("Plugin:identifier to Route object map")
-	HashMap<String, String> pluginHooks = HashMap<String, String>();
+	doc("Plugin:identifier to Resource map")
+	value pluginResources = HashMap<String, Resource>();
+
+	doc("Plugin:identifier to Resource map")
+	value pluginServices = HashMap<String, Service>();
+
+	doc("Plugin:identifier to Contribution interface map")
+	HashMap<String, Contribution> pluginContributions = HashMap<String, Contribution>();
 
 	doc("Check annoations and register route")
 	void registerRoutes() {
@@ -24,7 +30,8 @@ class Plugins() {
 		for ( a in inf.item.pluginClass.annotatedMemberDeclarations<FunctionDeclaration, RouteAnnotation>()) {
 			if (exists ra = a.annotations<RouteAnnotation>().first) {
 				Method<Plugin,Result,[Context]> method = a.memberApply<Plugin, Result, [Context]>(`Context`);
-				WebRoute webRoute = WebRoute(inf.key, ra.routeName, ["GET"], ra.routePath, method, ra.routerPermission);
+				WebRoute webRoute = WebRoute(inf.key, ra.routeName, a.annotations<Methods>(), 
+						ra.routePath, method, a.annotations<Permission>().first?.permission);
 				watchdog(1, "Plugins", "Adding route: " + webRoute.string);
 				pluginRoutes.put(inf.key + ":" + webRoute.path, webRoute);
 				print ("Plugin Routes: " + pluginRoutes.string);
@@ -48,17 +55,17 @@ class Plugins() {
 	}
 	
 	deprecated("FIX this and use it in register")
-	void registerHooks(String id, Plugin plugin) {
+	void registerContributions(String id, Plugin plugin) {
 	  // we are only checking for interfaces, as the plugin class can satisfy hooks as well
 	  for (t in type(plugin).declaration.packageContainer.members<InterfaceDeclaration>()) {
-		value searched = satisfiesInterface("com.dgwave.lahore.api.Hook", t.interfaceDeclarations, t.packageContainer.name + "." + t.name); 
+		value searched = satisfiesInterface("com.dgwave.lahore.api.Contribution", t.interfaceDeclarations, t.packageContainer.name + "." + t.name); 
 		if (!is Boolean searched) {
-			pluginHooks.put(id, searched);
+			pluginContributions.put(id, ContributionImpl(searched));
 		} else {
 			watchdog(1, "Plugins", "No hook API found for plugin ``id``");
 		}
 	  }
-		watchdog(1, "Plugins", "Hook List: " + pluginHooks.string); 
+		watchdog(1, "Plugins", "Hook List: " + pluginContributions.string); 
 	}
 
 
@@ -82,7 +89,7 @@ class Plugins() {
 				if (exists pluginName) { // should always exit
 					if (exists pluginDesc) {
 						if (exists pluginConfigure) {
-						  pluginInfos.put(pluginId, PluginInfo(
+						  pluginInfos.put(pluginId, PluginInfoImpl(
 							pluginId, pluginName, pluginDesc, pluginConfigure,
 							cmName, cmVersion,
 							pluginClass, hookInterface, hookImpls));
@@ -97,7 +104,7 @@ class Plugins() {
 		}
 	}
 
-	doc("Recursively parses all Ceylon modules")	
+	doc("Recursively parse dependencies")	
 	HashSet<String> parseDependencies(String cmName, String cmVersion, String id, HashSet<String> oldList) {
 		// start with ourselves, and then fan out
 		variable HashSet<String> list = HashSet<String>(oldList);
@@ -126,20 +133,18 @@ class Plugins() {
 	     not the 'hook' dependencies.  Presence of hook interface will ensure that")
 	void reCalculateDependencies() {
 		for (info in pluginInfos) {
-			PluginInfo s = info.item;
+			PluginInfoImpl s = info.item;
 			String[] deps = parseDependencies(s.moduleName, s.moduleVersion, s.id, HashSet<String>()).sequence;
-			pluginInfos.put(info.key, PluginInfo(s.id, s.name, s.description, s.configureLink,
-					s.moduleName, s.moduleVersion, s.pluginClass, s.hookInterface, s.implements, deps));
+			pluginInfos.put(info.key, s.withDependsOn(deps));
 		}
 
 		
 		for (info in pluginInfos) {
 			value depBy = pluginInfos.collect<String>((String->PluginInfo inf) => 
-				inf.item.dependsOn.contains(info.key) then inf.key else "~NO~")
+				inf.item.dependsOn(info.key) then inf.key else "~NO~")
 				.filter((String e) => e != "~NO~").sequence;
-			PluginInfo r = info.item;
-			pluginInfos.put(info.key, PluginInfo(r.id, r.name, r.description, r.configureLink,
-					r.moduleName, r.moduleVersion, r.pluginClass, r.hookInterface, r.implements, r.dependsOn, depBy));
+			PluginInfoImpl r = info.item;
+			pluginInfos.put(info.key, r.withDependedBy(depBy));
 		}		
 	}
 			
@@ -196,8 +201,12 @@ class Plugins() {
 	reCalculateDependencies();
 	
 	for (inf in pluginInfos) {
-		pluginFinals.put(inf.key, ContextualPlugin(pluginScope, inf.item, AssocConfig(), 
-			pluginRoutes.values.filter((WebRoute route) => route.pluginId == inf.key).sequence));
+		pluginFinals.put(inf.key, PluginImpl(pluginScope, inf.item, AssocConfig(), 
+			pluginRoutes.values.filter((WebRoute route) => route.pluginId == inf.key).sequence,
+			pluginContributions.values.filter((Contribution cont) => cont.pluginId == inf.key).sequence,
+			pluginResources.values.filter((Resource res) => res.pluginId == inf.key).sequence,
+			pluginServices.values.filter((Service service) => service.pluginId == inf.key).sequence
+			));
 	}
 
 
@@ -209,13 +218,17 @@ class Plugins() {
 		return pluginRoutes.values.filter((WebRoute route) => route.path.startsWith("admin"));
 	}
 	
-	shared Plugin? findPlugin(String pluginId) { 
+	shared PluginImpl? findPlugin(String pluginId) { 
 		return pluginFinals.get(pluginId); 
 	}
 
+	shared PluginInfoImpl? findPluginInfo(String pluginId) { 
+		return pluginInfos.get(pluginId); 
+	}
+	
 	Plugin? removePlugin(String pluginId) {
 		pluginRoutes.remove(pluginId);
-		pluginHooks.remove(pluginId);
+		pluginContributions.remove(pluginId);
 		pluginInfos.remove(pluginId);
 		return pluginFinals.remove(pluginId); 
 	}
@@ -263,9 +276,15 @@ shared object plugins {
 		return {}; 
 	}
 	
-	shared {WebRoute*} routesFor({String*} sitePlugins) { return nothing; }
-	shared Plugin? findPlugin(String id) { 
-		return mh.findPlugin(id); 
-	}	
+	shared {WebRoute*} routesFor({String*} sitePlugins) { 
+		return nothing; 
+	}
+	
+	shared PluginImpl? plugin(String pluginId) { 
+		return mh.findPlugin(pluginId); 
+	}
+	
+	shared PluginInfoImpl? info (String pluginId) {
+		return mh.findPluginInfo(pluginId);	}
 }
 

@@ -1,16 +1,27 @@
-import com.dgwave.lahore.api { Service, Plugin, plugin }
-shared class Services() {
-	shared void register(String id, Plugin?(String) plugin) {}
+import com.dgwave.lahore.api { Service }
+import ceylon.collection { HashMap }
+
+class Services() {
+	value serviceMap = HashMap<String, Service>();
+	
+	shared void register(String serviceId, ServiceImpl serviceImpl) {
+		serviceMap.put(serviceId, serviceImpl);
+	}
 }
 
 shared object services {
 	Services sh = Services();
 	shared Service find(String serviceId) { return nothing; }
-	shared void register(String id, Service service) {
-		sh.register(id, plugin);
+	shared void register(String serviceId, ServiceImpl serviceImpl) {
+		sh.register(serviceId, serviceImpl);
 	}	
 }
 
 shared Service service(String serviceId) {
 	return services.find(serviceId);
+}
+
+shared class ServiceImpl(pluginId) satisfies Service {
+
+	shared actual String pluginId;
 }

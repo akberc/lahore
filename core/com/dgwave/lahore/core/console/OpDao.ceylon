@@ -1,5 +1,6 @@
 import ceylon.net.http.server { Session }
 import ceylon.collection { MutableMap, HashMap }
+import com.dgwave.lahore.api { Task }
 
 by ("Matej Lazar")
 doc ("Adapted from Openshift Ceylon template by Matej Lazar")

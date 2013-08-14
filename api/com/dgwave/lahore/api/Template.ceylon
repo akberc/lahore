@@ -13,7 +13,7 @@ shared abstract class HtmlTemplate() satisfies Template<Markup> {
 	}
 }
 
-shared interface TemplateHook satisfies Hook {
+shared interface TemplateContribution satisfies Contribution {
 	shared formal String[] preProcessBlock(String[] variables);
 }
 

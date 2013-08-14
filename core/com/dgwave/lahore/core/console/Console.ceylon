@@ -3,6 +3,7 @@ import ceylon.net.http { contentType }
 import ceylon.io.charset { utf8 }
 import ceylon.collection { LinkedList }
 import com.dgwave.lahore.core { lahoreServers, lahoreSites }
+import com.dgwave.lahore.api { Task }
 
 doc ("Adapted from Openshift Ceylon template by Matej Lazar")
 shared void console(Request request, Response response) {

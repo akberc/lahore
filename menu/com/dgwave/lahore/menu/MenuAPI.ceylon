@@ -1,15 +1,12 @@
-import com.dgwave.lahore.api { Hook, Result, hook }
+import com.dgwave.lahore.api { Contribution, Result }
 
 
-shared interface MenuHook satisfies Hook{
+shared interface MenuContribution satisfies Contribution{
 	
-	hook("menu_insert")
 	shared default Result menuInsert(Menu menu) {return null;}
 	
-	hook("menu_update")
 	shared default Result menuUpdate(Menu menu) {return null;}
 	
-	hook("menu_delete")
 	shared default Result menuDelete(Menu menu) {return null;}
 }
 

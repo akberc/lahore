@@ -59,7 +59,7 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
 		}
 
 		if (exists r) {	
-			Plugin? plugin = plugins.findPlugin(r.pluginId);
+			Plugin? plugin = plugins.plugin(r.pluginId);
 			if (exists plugin) {						
 				Page? p = serviceInternal(plugin,dc, r);
 				if (exists p) {
@@ -161,6 +161,7 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
 }
 
 	shared object systemTheme satisfies Theme {
+		shared actual String pluginId = "system";
 		shared actual {Region*} regions = {};
 		shared actual {Script*} scripts = {};
 		shared actual {Style*} styles = {};

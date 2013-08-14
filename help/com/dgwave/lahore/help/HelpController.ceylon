@@ -1,14 +1,11 @@
 import com.dgwave.lahore.api { ... }
 
-class HelpController() {
+class HelpController(plugin) satisfies Controller {
 	
-	shared late Plugin plugin;
+	shared actual Runtime plugin;
 	
   /**
-   * Prints a page listing a glossary of lahore terminology.
-   *
-   * @return string
-   *   An HTML string representing the contents of help page.
+   * Prints a page listing a glossary of terms.
    */
 	shared Result helpMain(Context c) { 
 		Assoc output = assoc(
@@ -23,14 +20,11 @@ class HelpController() {
 
   /**
    * Provides a formatted list of available help topics.
-   *
-   * @return string
-   *   A string containing the formatted list.
    */
   String helpLinksAsList(Context c) {
 	variable String output = "";
 
-	{String*} impls = c.hookImplementations;
+	{String*} impls = plugin.contributors;
 
     //asort(impls);
 
@@ -64,26 +58,28 @@ class HelpController() {
    *   A render array as expected by lahore_render().
    */
 	shared Result helpPage(Context c) {
-	String? pluginName = c.pathParam("{name}");
-	if (exists pluginName) {
+	String? otherPluginName = c.pathParam("{name}");
+	if (exists otherPluginName) {
 	    Assoc build = assoc();
-	    if (c.hookIsImplementedBy(pluginName)) {
+	    if (plugin.isContributedToBy(otherPluginName)) {
 	        
-	      value temp = c.hook(pluginName, "help", ["admin/help#" + pluginName]);
+	      value temp = plugin.contributionFrom(otherPluginName, 
+	      	`HelpContribution.help`, c.withCallScope("path", "admin/help#" + otherPluginName));
 		  
 		  if (exists temp) {
 			build.put("top", assoc ("#markup" -> temp.string) );  
 		  }
 	      else {
-	        build.put("top", assoc ("#markup" -> t("No help is available for module %module.", {"%module" -> pluginName})));
+	        build.put("top", assoc ("#markup" -> t("No help is available for module %module.", {"%module" -> otherPluginName})));
 	      }
 	
 	      // Only print list of administration pages if the module in question has
 	      // any such pages associated to it.
-	      value adminTasks = getPluginAdminTasks(pluginName); // array of assocs
+	      value adminTasks = plugin.plugin(otherPluginName)?.configurationTasks; // array of assocs
+		  if (exists adminTasks) {
 	      if (!adminTasks.empty) {
 	        value links = array();
-	        for (Assoc task in adminTasks) { // one assoc
+	        for (Task task in adminTasks) { // one assoc
 	          //value link = assoc ("localized_options" -> task.getAssoc("localized_options"));
 	          //link.put ("href", task.getString("link_path"));
 	          //link.put ("title", task.getString("title"));
@@ -92,11 +88,12 @@ class HelpController() {
 			build.put("links", assoc ("#links" -> assoc (
 	          "#heading" -> assoc(
 	            "level" -> "h3",
-	            "text" -> t("@module administration pages", {"@module" -> pluginName})
+	            "text" -> t("@module administration pages", {"@module" -> otherPluginName})
 	          ),
 	          "#links" -> links
 	        )));
 	      }
+	     } 
 	    }
 	
 	    return build;
