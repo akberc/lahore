@@ -34,8 +34,8 @@ shared class MenuPlugin(plugin) satisfies Plugin & HelpContribution {
 	permission("_access_menu_delete_link: 'TRUE'")
 	shared Result menu_delete(Context c) => entForm1.menu_delete(c);
  
- 	shared actual Result help(String path, String[]? args) {
-
+ 	shared actual Result help(Context c) {
+		String path = c.passed("path").string;
 	    if (path == "admin/help#menu") {
 		  return {
 		      	H3(t("About")),

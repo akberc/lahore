@@ -1,9 +1,9 @@
-import com.dgwave.lahore.api { watchdog,  Config, Entity, Theme, Script, Region, Template, Style, Markup, Plugin, Context, Result, Assoc }
-import com.dgwave.lahore.core.component { plugins, Page, FileStorage, SqlStorage, RawPage, ConcreteResult, TemplatedPage }
+import com.dgwave.lahore.api { watchdog,  Config, Theme, Script, Region, Template, Style, Markup, Methods }
+import com.dgwave.lahore.core.component { plugins, Page }
 import ceylon.net.http.server { Matcher, Request, Response }
 import ceylon.net.http { get, post, Method, contentType }
 import ceylon.io.charset { utf8 }
-import ceylon.file { Path, Directory, parseURI, parsePath }
+import ceylon.file { Path, parseURI }
 
 
 //shared class WebSite(site, host, port, context, staticURI) satisfies Site {
@@ -59,9 +59,9 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
 		}
 
 		if (exists r) {	
-			Plugin? plugin = plugins.plugin(r.pluginId);
+			PluginImpl? plugin = plugins.plugin(r.pluginId);
 			if (exists plugin) {						
-				Page? p = serviceInternal(plugin,dc, r);
+				Page? p = plugin.produceRoute(dc, r);
 				if (exists p) {
 					resp.writeString(p.render());
 				} else {
@@ -89,21 +89,6 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
 			}
 		}
 	}
-
-	shared Page? serviceInternal(Plugin plugin, Context c, WebRoute r) {
-		watchdog(8, "MainDispatcher", "Using route " + r.string);
-		Result raw = r.produce(plugin)(c);
-		switch(raw)
-		case(is Assoc) {
-			return  RawPage({ConcreteResult({raw})});
-		} 
-		else {
-			// We do not want template internal details here - we leave
-			// the regions and other top-level names to internal implementation of
-			// Page, templates and themes
-			return TemplatedPage({raw}, "system"); //TODO lookup from site registry
-		}
-	}	
 	
 	doc("Internal method to find an applicable route given a path")		
 	WebRoute? findApplicableRoute(String method, String path, DefaultWebContext dc) {
@@ -119,7 +104,7 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
 			if (exists token) {
 				watchdog(8, "WebSite", "Found path token in template: " + token.item + " at position " + token.key.string); // TODO loop
 				variable String keyPath = ""; variable String keyVal = "";
-				{String*} inSegments = path.split((Character ch) => ch == "/");
+				{String*} inSegments = path.split((Character ch) => ch == '/');
 				watchdog(8, "WebSite", "Incoming path segments: " + inSegments.string);
 				variable Integer j = 0;
 				for(seg in inSegments) {
@@ -139,12 +124,11 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
 		    }
 		}
 		
-
-			if (r.methods.contains((method)) && r.path.equals(path)) {
-				return r;
-			}
+		if (r.methods.any((Methods ms) => ms.method.string == method) && r.path.equals(path)) {
+			return r;
 		}
-		return null;
+	  }
+	  return null;
 	}		
 
 	{Entry<Integer, String>*} getPathTokens({String*} tokens) {

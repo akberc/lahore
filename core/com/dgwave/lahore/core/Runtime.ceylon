@@ -1,8 +1,8 @@
-import com.dgwave.lahore.api { Scope, Resource, Service, Config, Plugin, PluginRuntime, PluginInfo, Contribution, Runtime, Contributed, Context, Task }
-import ceylon.collection { HashMap }
+import com.dgwave.lahore.api { Scope, Resource, Service, Config, Plugin, PluginRuntime, PluginInfo, Contribution, Runtime, Contributed, Context, Task, watchdog, Result, Assoc, RouteAnnotation, Methods, Permission }
+import ceylon.collection { HashMap, LinkedList }
 import ceylon.language.model.declaration { ClassDeclaration, InterfaceDeclaration, FunctionDeclaration }
-import com.dgwave.lahore.core.component { plugins }
-import ceylon.language.model { Class }
+import com.dgwave.lahore.core.component { plugins, Page, RawPage, ConcreteResult, TemplatedPage }
+import ceylon.language.model { Class, Method }
 
 shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
 		configurationLink, pluginClass, contributionInterface, 
@@ -47,12 +47,14 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
 
 doc("Provides run-time implementations. PluginInfo can be for any plugin.
      Here the info represents the plugin itself, hence the duplication")
-shared class PluginRuntimeImpl (info, contributions) 
+shared class PluginRuntimeImpl (info) 
 		satisfies PluginInfo & PluginRuntime {
 	
 	PluginInfoImpl info;
-	Contribution[] contributions;
-	String[] dependedByList;
+	
+	"Keyed by originating plugin and method name, with items being implementations. Populated externally"
+	HashMap<String, Contribution> contributions = HashMap<String, Contribution> ();
+	
 	shared actual Boolean dependedBy(String pluginId) => info.dependedByList.contains(pluginId);
 
 	shared actual String id => info.id;
@@ -68,25 +70,33 @@ shared class PluginRuntimeImpl (info, contributions)
 	shared actual Boolean providesService (String serviceId) => info.providesService(serviceId);
 	shared actual Boolean providesResource (String resourceId) => info.providesResource(resourceId);
 	
+	shared void addContribution (String key, Contribution contribution) {
+		this.contributions.put(key, contribution);
+	}
 	
-	"Keyed by originating plugin and method name, with items being implementations"
-	value contribMap = HashMap<String, Contribution>();
-
 	shared actual {Contributed*} allContributions(FunctionDeclaration contrib, Context c) {
-		return {};
+		return { for (id in contributions.keys) contributionFrom(id, contrib,c)};
 	}
 	
 	shared actual Contributed contributionFrom(String pluginId, 
 		FunctionDeclaration contrib, Context c) {
+		try {
+			if (exists cb = contributions.get(pluginId)) {
+			  Method<Contribution, Result, [Context]> m = contrib.memberApply<Contribution, Result, [Context]>(`Context`);
+			  return [pluginId, m(cb)(c)];
+			} 
+		} catch (Exception e) {
+			watchdog (3, "Runtime", "Contribution could not be invoked: ``e.message``");
+		}
 		return [pluginId,null];
 	}
 	
 	shared actual {String*} contributors {
-		return contribMap.keys;
+		return contributions.keys;
 	}
 	
 	shared actual Boolean isContributedToBy(String otherPluginId) {
-		return contribMap.contains(otherPluginId);
+		return contributions.keys.contains(otherPluginId);
 	}
 
 	shared actual Boolean another(String pluginId) {
@@ -104,23 +114,19 @@ shared class PluginRuntimeImpl (info, contributions)
 }
 	
 doc("The runtime representation of a plugin")
-shared class PluginImpl (scope, pluginInfo, config, 
-	routes, contributions, resources, services) satisfies Plugin {
+shared class PluginImpl (scope, pluginInfo, config) satisfies Plugin {
 	
 	shared Scope scope;
 	shared PluginInfoImpl pluginInfo;
 	shared Config config;
 	
-	shared WebRoute[] routes;
-	shared Contribution[] contributions;
-	shared Resource[] resources;
-	shared Service[] services;
+	value routes = LinkedList<WebRoute>();
 			
-	shared actual Runtime plugin = PluginRuntimeImpl(pluginInfo, contributions);  // pass on for actual invocation
+	shared actual Runtime plugin = PluginRuntimeImpl(pluginInfo);  // pass on for actual invocation
 
-	variable Plugin? pluginInstance = null;
+	shared variable Plugin? pluginInstance = null;
+
 	// instantiate class and interface from info and inject the run-time
-	//value instantiable = pluginInfo.pluginClass.apply();
 	value instantiable = pluginInfo.pluginClass.apply(`PluginInfo & PluginRuntime`);
 	if (is Class<Anything, [PluginInfo & PluginRuntime]> instantiable) {
 		value instance = instantiable(plugin);
@@ -129,6 +135,35 @@ shared class PluginImpl (scope, pluginInfo, config,
 		}
 	}
 
+
+	for ( a in pluginInfo.pluginClass.annotatedMemberDeclarations<FunctionDeclaration, RouteAnnotation>()) {
+		if (exists ra = a.annotations<RouteAnnotation>().first) {
+			Method<Plugin,Result,[Context]> method = a.memberApply<Plugin, Result, [Context]>(`Context`);
+			WebRoute webRoute = WebRoute(pluginInfo.id, ra.routeName, a.annotations<Methods>(), 
+					ra.routePath, method, a.annotations<Permission>().first?.permission);
+			watchdog(1, "Plugins", "Adding route: " + webRoute.string);
+			routes.add(webRoute);
+		}
+	}
+
+	shared Page? produceRoute(Context c, WebRoute r) {
+	  watchdog(8, "MainDispatcher", "Using route " + r.string);
+	  if (exists p = pluginInstance) {
+		Result raw = r.produce(p)(c);
+		switch(raw)
+		case(is Assoc) {
+			return  RawPage({ConcreteResult({raw})});
+		} 
+		else {
+			// We do not want template internal details here - we leave
+			// the regions and other top-level names to internal implementation of
+			// Page, templates and themes
+			return TemplatedPage({raw}, "system"); //TODO lookup from site registry
+		}
+	  }
+	  return null;
+	}	
+	
 	shared actual void start() {
 		if (exists p = pluginInstance) {
 			p.start();

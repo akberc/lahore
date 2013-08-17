@@ -17,13 +17,13 @@ import com.redhat.ceylon.cmr.api.RepositoryException;
 import com.redhat.ceylon.cmr.api.VisibilityType;
 
 
-public class Manager {
+public class Loader {
 
 	public void registerExtensions() {
 		ModuleIdentifier modId = ModuleIdentifier.create("com.dgwave.lahore.ext", "0.1");
 		try {
 			Module onePlugin = Module.getCallerModuleLoader().loadModule(modId);
-			System.out.println("Manager: Plugin loaded is: " + onePlugin.toString());
+			System.out.println("Loader: Plugin loaded is: " + onePlugin.toString());
 			List<String> toLoad = new ArrayList<String>();
 			toLoad.add("com.redhat.ceylon.typechecker/0.6");
 			toLoad.addAll(Arrays.asList(CeylonConfig.get().getOptionValues("lahore.plugins.preload")));
@@ -34,7 +34,7 @@ public class Manager {
             for (String ex : toLoadNames) {
 				String[] nv = ex.split("/");
 				onePlugin = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(nv[0], nv[1]));
-				System.out.println("Manager: Plugin loaded is: " + onePlugin.toString());				
+				System.out.println("Loader: Plugin loaded is: " + onePlugin.toString());				
 				Metamodel.loadModule(nv[0], nv[1], makeExtensionArtifact(System.getProperty("user.home") +"/.ceylon/repo", nv[0], nv[1], new String[] {}), onePlugin.getClassLoader());
 			}
             
@@ -63,7 +63,7 @@ public class Manager {
 			m1.invoke(null, null); // new Object[] {});
 */
 		} catch (Exception e) {
-			System.err.println("Manager: Error loading plugins - is the plugin interface fully implemented? ': " + e.getMessage());
+			System.err.println("Loader: Error loading plugins - is the plugin interface fully implemented? ': " + e.getMessage());
 			e.printStackTrace();
 			System.exit(1);
 		}

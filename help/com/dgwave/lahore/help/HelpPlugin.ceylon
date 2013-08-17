@@ -22,7 +22,8 @@ shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContri
 
 	
 	"Contributes to help"
-	shared actual Result help(String path, String[]? args)  {
+	shared actual Result help(Context c)  {
+		 String path = c.passed("path").string; //String[]? args;
 		 variable Li optional = Li("");
          if (plugin.another("node")) {
       		optional = Li(t("<strong>Start posting content</strong> Finally, you can <a href=\"@content\">add new content</a> for your website.", 
@@ -90,6 +91,6 @@ shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContri
 
 shared interface HelpContribution satisfies Contribution {
 
-	shared default Result help(String path, String[]? args) {return null;}
+	shared default Result help(Context c) {return null;}
 
 }

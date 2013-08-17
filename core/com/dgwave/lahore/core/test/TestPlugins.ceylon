@@ -1,6 +1,6 @@
 import ceylon.test { ... }
 import com.dgwave.lahore.api { ... }
-import com.dgwave.lahore.core { PluginRuntimeImpl, PluginInfoImpl, PluginImpl, Manager }
+import com.dgwave.lahore.core { PluginRuntimeImpl, PluginInfoImpl, PluginImpl, Loader }
 import com.dgwave.lahore.core.component { AssocConfig }
 
 by ("Akber Choudhry")
@@ -35,7 +35,7 @@ void testPlugins() {
 		 `TestPlugin`, `TestContribution`, [contribName], ["one", "two"], ["four", "five"],
 		 [resName], [servName]);
 	
-	Runtime runtime = PluginRuntimeImpl(info, empty);
+	Runtime runtime = PluginRuntimeImpl(info);
 	
 	Plugin test = TestPlugin(runtime);
 	
@@ -61,8 +61,8 @@ void testPlugins() {
 		
 	//TODO externalize instantation to outside Plugins into components and use to populate
 	//FIXME take out this kludge once typechecker is accessible via runtime
-	Manager().registerExtensions();
-	PluginImpl impl = PluginImpl(pluginScope, info, AssocConfig(), empty, empty, empty, empty);
+	Loader().registerExtensions();
+	PluginImpl impl = PluginImpl(pluginScope, info, AssocConfig());
 	assertEquals("plugin", impl.scope.string);
 	assertNotNull(impl.plugin); // impl should have created its own runtime
 	

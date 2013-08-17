@@ -30,6 +30,7 @@ object testContext satisfies Context {
 	shared actual String? queryParam(String name) {return null;}	
 	shared actual Path staticResourcePath(String type, String name) {return parsePath(type + "." + name);}
 
-	shared actual Context withCallScope(String string, Assocable arg) { return this; }
+	shared actual Context passing(String string, Assocable arg) { return this; }
+	shared actual Assocable passed(String string) { return ""; }
 	
 }

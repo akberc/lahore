@@ -128,10 +128,17 @@ shared class DefaultWebContext(Context fromContext,  theme, config)
 		}
 	}
 
-	shared actual Context withCallScope(String key, Assocable arg) {
-		return fromContext.withCallScope(key, arg);
+	shared actual Context passing(String key, Assocable arg) { // TODO scope
+		put(key, arg);
+		return this;
 	}
-	
+
+	shared actual Assocable passed(String key) {
+		if (is Assocable assocable = get(key)) {
+			return assocable;
+		}
+		return "";
+	}	
 }
 
 

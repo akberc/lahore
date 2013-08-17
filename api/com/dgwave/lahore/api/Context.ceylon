@@ -36,7 +36,9 @@ shared interface Context {
 	shared formal Storage<Entity> entityStorage;	
 	shared formal Storage<Config> configStorage;
 	
-	shared formal Context withCallScope(String string, Assocable arg);
+	"Passing parameters between plugins"
+	shared formal Assocable passed(String string);
+	shared formal Context passing(String string, Assocable arg);
 }
 
 shared interface Storage<Element> {

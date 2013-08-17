@@ -56,7 +56,8 @@ object lahore {
     	    	
     	shared actual Path staticResourcePath(String type, String name) { return home.childPath("static").childPath(name + "." + type);}
 
-    	shared actual Context withCallScope(String string, Assocable arg)  {return this;}    	
+    	shared actual Context passing(String string, Assocable arg)  {return this;}
+		shared actual Assocable passed(String key)  {return "";} 
 	}
 
     shared void boot() {
@@ -68,7 +69,7 @@ object lahore {
 			process.exit(1);
 		}
 
-		Manager().registerExtensions();
+		Loader().registerExtensions();
 		booted = true;
 	}
 	
@@ -106,7 +107,6 @@ shared void createServers() {
 			adminServer.startInBackground(site.item.port, site.item.host); // throw in background
 		}
 		loadOtherSites();
-		//loadOtherPlugins();
 	}   
 }
 
