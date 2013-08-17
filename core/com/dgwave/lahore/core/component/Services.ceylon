@@ -17,11 +17,8 @@ shared object services {
 	}	
 }
 
-shared Service service(String serviceId) {
-	return services.find(serviceId);
-}
 
-shared class ServiceImpl(pluginId) satisfies Service {
+shared class ServiceImpl(id) satisfies Service {
 
-	shared actual String pluginId;
+	shared actual String id;
 }

@@ -151,7 +151,8 @@ class Plugins() {
 	// OK, now register all the modules once
 	for (cm in modules.list) {
 		try {
-		  if (!cm.name.startsWith("ceylon") && !cm.name.startsWith("oracle") && !cm.name.startsWith("java") && !cm.name.startsWith("javax")) {
+		  if (!cm.name.startsWith("ceylon") && !cm.name.startsWith("oracle") 
+		  		&& !cm.name.startsWith("java") && !cm.name.startsWith("javax") && !cm.name.startsWith("org.yaml")) {
 			for (Package pk in cm.members) {
 				if (cm.name == pk.name  && cm.name != "com.dgwave.lahore.core") { //FIXME - kludge for null on Java classes
 				//  if (exists marker = pk.getClassOrInterface("module_")) {
@@ -204,9 +205,9 @@ class Plugins() {
 		pluginFinals.put(inf.key, PluginImpl(pluginScope, inf.item, AssocConfig(), 
 			pluginRoutes.values.filter((WebRoute route) => route.pluginId == inf.key).sequence,
 			pluginContributions.values.filter((Contribution cont) => cont.pluginId == inf.key).sequence,
-			pluginResources.values.filter((Resource res) => res.pluginId == inf.key).sequence,
-			pluginServices.values.filter((Service service) => service.pluginId == inf.key).sequence
-			));
+			pluginResources.values.filter((Resource res) => res.id == inf.key).sequence,
+			pluginServices.values.filter((Service service) => service.id == inf.key).sequence
+			)); // res and services pluginId will be key instead of 'id' TODO
 	}
 
 

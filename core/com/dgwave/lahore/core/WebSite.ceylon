@@ -161,7 +161,7 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
 }
 
 	shared object systemTheme satisfies Theme {
-		shared actual String pluginId = "system";
+		shared actual String id = "system";
 		shared actual {Region*} regions = {};
 		shared actual {Script*} scripts = {};
 		shared actual {Style*} styles = {};

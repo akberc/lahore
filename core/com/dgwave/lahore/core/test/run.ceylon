@@ -5,12 +5,12 @@ doc ("Run Lahore core tests")
 
 shared void run(){
     suite("lahore.core",
-        //"Methods" -> testMethods,
-       // "Dispatcher" -> testDispatcher,
-        "Plugins" -> testPlugins
-       // "Yaml" -> testYaml,
+        "Methods" -> testMethods,
+        "Dispatcher" -> testDispatcher,
+        "Plugins" -> testPlugins,
+        //"Yaml" -> testYaml,
 		//"Html" -> testHtml,
-		//"Template" -> testTemplate,
-		//"Regex" -> testRegex
+		"Template" -> testTemplate,
+		"Regex" -> testRegex
     );
 }

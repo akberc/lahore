@@ -24,13 +24,6 @@ shared interface Contribution {
 
 }
 
-shared interface Task {
-    shared formal String id;
-    shared formal String message;
-    shared formal variable Boolean done;
-
-}
-
 doc("Information about a plugin that core and other plugins may need to know
      but the subject plugin knows about itself at compile-time")
 shared interface PluginInfo {
@@ -46,7 +39,9 @@ shared interface PluginInfo {
 	shared formal Boolean contributes (String contributionId);
 	shared formal Boolean providesResource (String resourceName);
 	shared formal Boolean providesService (String serviceName);	
-	shared formal Boolean dependsOn (String pluginId);	
+	shared formal Boolean dependsOn (String pluginId);
+	//TODO do we need hasRoute here, or in runtime, or leave it at the site level?
+		
 	shared default actual String string {
 		return "PluginInfo: ``id``, ``name``, ``description`` 
 		        from Ceylon module ``moduleName``/``moduleVersion``.";
@@ -92,13 +87,15 @@ shared interface Controller {
 	shared formal Runtime plugin;
 }
 
-shared interface Resource {
-	shared formal String pluginId;
-
-
+shared interface Resource satisfies Annotated {
+	shared formal String id;
 }
 
-shared interface Service {
-	shared formal String pluginId;
+shared interface Service satisfies Annotated {
+	shared formal String id;
 }
 
+shared interface Task satisfies Service{
+    shared formal String message;
+    shared formal variable Boolean done;
+}

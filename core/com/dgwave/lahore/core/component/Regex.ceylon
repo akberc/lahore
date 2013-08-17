@@ -3,6 +3,7 @@ import java.lang { arrays, ByteArray}
 import ceylon.io.charset { utf8, Decoder }
 import ceylon.io.buffer { ByteBuffer, newByteBuffer, newByteBufferWithData, newCharacterBufferWithData }
 import ceylon.collection { LinkedList }
+import org.jcodings { Encoding {asciiToUpper}}
 
 String? toString(ByteBuffer byteBuffer) {	
 	Decoder decoder = utf8.newDecoder();
@@ -24,6 +25,8 @@ shared {String*} segments(String tosplit, String pattern) {
 	if (pattern.startsWith("/")) {
 		pat = pat.skipping(1).takingWhile((Character c) => c != '/');
 	}
+	
+	asciiToUpper(39); // trigger load of module
 	
 	Regex r = Regex(String(pat));
 		

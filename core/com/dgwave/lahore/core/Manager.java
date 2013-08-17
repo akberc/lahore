@@ -2,6 +2,7 @@ package com.dgwave.lahore.core;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.modules.Module;
@@ -18,15 +19,19 @@ import com.redhat.ceylon.cmr.api.VisibilityType;
 
 public class Manager {
 
-	void registerExtensions() {
+	public void registerExtensions() {
 		ModuleIdentifier modId = ModuleIdentifier.create("com.dgwave.lahore.ext", "0.1");
 		try {
 			Module onePlugin = Module.getCallerModuleLoader().loadModule(modId);
 			System.out.println("Manager: Plugin loaded is: " + onePlugin.toString());
-			ArtifactResult ar = makeExtensionArtifact(System.getProperty("user.home") +"/.ceylon/repo", modId.getName(), modId.getSlot(), CeylonConfig.get().getOptionValues("modules.preload"));
+			List<String> toLoad = new ArrayList<String>();
+			toLoad.add("com.redhat.ceylon.typechecker/0.6");
+			toLoad.addAll(Arrays.asList(CeylonConfig.get().getOptionValues("lahore.plugins.preload")));
+			String [] toLoadNames = toLoad.toArray(new String[] {});
+			ArtifactResult ar = makeExtensionArtifact(System.getProperty("user.home") +"/.ceylon/repo", modId.getName(), modId.getSlot(), toLoadNames);
 			Metamodel.loadModule(modId.getName(), modId.getSlot(), ar, onePlugin.getClassLoader());
 			
-            for (String ex : CeylonConfig.get().getOptionValues("modules.preload")) {
+            for (String ex : toLoadNames) {
 				String[] nv = ex.split("/");
 				onePlugin = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(nv[0], nv[1]));
 				System.out.println("Manager: Plugin loaded is: " + onePlugin.toString());				
@@ -95,7 +100,8 @@ public class Manager {
             @Override
             public File artifact() throws RepositoryException {
                 try {
-                	String fileName = repo + "/" + name.replace(".","/") + "/" + version + "/" + name + "-" + version + ".car"; 
+                	String ext = name.contains("redhat") ? "jar" : "car";
+                	String fileName = repo + "/" + name.replace(".","/") + "/" + version + "/" + name + "-" + version + "." + ext; 
 					return new File(fileName);
 				} catch (Exception e) {
 					return null;

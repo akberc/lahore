@@ -49,25 +49,49 @@ shared abstract class HttpMethod()
 	of httpGET | httpPOST | httpPUT | httpHEAD | httpDELETE | httpTRACE | httpCONNECT |
 		httpOPTIONS | httpPROPFIND | httpPROPPATCH | httpMKCOL |
 		httpCOPY | httpMOVE | httpLOCK | httpUNLOCK {}
-shared object httpGET extends HttpMethod() {}
-shared object httpPOST extends HttpMethod() {}
-shared object httpPUT extends HttpMethod() {}
-shared object httpDELETE extends HttpMethod() {}
-shared object httpHEAD extends HttpMethod() {}
-shared object httpOPTIONS extends HttpMethod() {}
-shared object httpTRACE extends HttpMethod() {}
-shared object httpCONNECT extends HttpMethod() {}
-shared object httpPROPFIND extends HttpMethod() {}
-shared object httpPROPPATCH extends HttpMethod() {}
-shared object httpMKCOL extends HttpMethod() {}
-shared object httpCOPY extends HttpMethod() {}
-shared object httpMOVE extends HttpMethod() {}
-shared object httpLOCK extends HttpMethod() {}
-shared object httpUNLOCK extends HttpMethod() {}
+shared object httpGET extends HttpMethod() { shared actual String string = "GET"; }
+shared object httpPOST extends HttpMethod() { shared actual String string = "POST"; }
+shared object httpPUT extends HttpMethod() { shared actual String string = "PUT"; }
+shared object httpDELETE extends HttpMethod() { shared actual String string = "DELETE"; }
+shared object httpHEAD extends HttpMethod() { shared actual String string = "HEAD"; }
+shared object httpOPTIONS extends HttpMethod() { shared actual String string = "OPTIONS"; }
+shared object httpTRACE extends HttpMethod() { shared actual String string = "TRACE"; }
+shared object httpCONNECT extends HttpMethod() { shared actual String string = "CONNECT"; }
+shared object httpPROPFIND extends HttpMethod() { shared actual String string = "PROPFIND"; }
+shared object httpPROPPATCH extends HttpMethod() { shared actual String string = "PROPPATCH"; }
+shared object httpMKCOL extends HttpMethod() { shared actual String string = "MKCOL"; }
+shared object httpCOPY extends HttpMethod() { shared actual String string = "COPY"; }
+shared object httpMOVE extends HttpMethod() { shared actual String string = "MOVE"; }
+shared object httpLOCK extends HttpMethod() { shared actual String string = "LOCK"; }
+shared object httpUNLOCK extends HttpMethod() { shared actual String string = "UNLOCK"; }
 
-shared final annotation class Methods(HttpMethod method)
+shared final annotation class Methods( shared HttpMethod method)
         satisfies SequencedAnnotation<Methods, FunctionDeclaration> {}
 
 "Annotation to specify the HTTP methods allowed on a route" 
 shared annotation Methods methods(HttpMethod method) => Methods(method);
+
+"The annotation class for [[resource]]."
+shared abstract class ResourceType()
+	of rTHEME | rTEMPLATE {}
+shared object rTHEME extends ResourceType() { shared actual String string = "THEME"; }
+shared object rTEMPLATE extends ResourceType() { shared actual String string = "TEMPLATE"; }
+
+shared final annotation class ResourceAnnotation( shared ResourceType type, shared String name) 
+        satisfies OptionalAnnotation<ResourceAnnotation, Resource> {}
+
+"Annotation to specify the resource type and name" 
+shared annotation ResourceAnnotation resource(ResourceType type, String name) => ResourceAnnotation(type, name);
+
+"The annotation class for [[service]]."
+shared abstract class ServiceType()
+	of sENTITY | sTASK {}
+shared object sENTITY extends ServiceType() { shared actual String string = "ENTITY"; }
+shared object sTASK extends ServiceType() { shared actual String string = "TASK"; }
+
+shared final annotation class ServiceAnnotation(shared ServiceType type, shared String name) 
+        satisfies OptionalAnnotation<ServiceAnnotation, Service> {}
+
+"Annotation to specify the resource type and name" 
+shared annotation ServiceAnnotation service(ServiceType type, String name) => ServiceAnnotation(type, name);
 

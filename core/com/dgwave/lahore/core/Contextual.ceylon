@@ -2,6 +2,7 @@ import com.dgwave.lahore.api { Scope, Resource, Service, Config, Plugin, PluginR
 import ceylon.collection { HashMap }
 import ceylon.language.model.declaration { ClassDeclaration, InterfaceDeclaration, FunctionDeclaration }
 import com.dgwave.lahore.core.component { plugins }
+import ceylon.language.model { Class }
 
 shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
 		configurationLink, pluginClass, contributionInterface, 
@@ -46,13 +47,13 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
 
 doc("Provides run-time implementations. PluginInfo can be for any plugin.
      Here the info represents the plugin itself, hence the duplication")
-shared class PluginRuntimeImpl (info, dependedByList, contributions) 
+shared class PluginRuntimeImpl (info, contributions) 
 		satisfies PluginInfo & PluginRuntime {
 	
-	PluginInfo info;
+	PluginInfoImpl info;
 	Contribution[] contributions;
 	String[] dependedByList;
-	shared actual Boolean dependedBy(String pluginId) => dependedByList.contains(pluginId);
+	shared actual Boolean dependedBy(String pluginId) => info.dependedByList.contains(pluginId);
 
 	shared actual String id => info.id;
 	shared actual String name => info.name;
@@ -75,9 +76,9 @@ shared class PluginRuntimeImpl (info, dependedByList, contributions)
 		return {};
 	}
 	
-	shared actual Contributed? contributionFrom(String pluginId, 
+	shared actual Contributed contributionFrom(String pluginId, 
 		FunctionDeclaration contrib, Context c) {
-		return null;
+		return [pluginId,null];
 	}
 	
 	shared actual {String*} contributors {
@@ -115,23 +116,35 @@ shared class PluginImpl (scope, pluginInfo, config,
 	shared Resource[] resources;
 	shared Service[] services;
 			
-	shared actual Runtime plugin = PluginRuntimeImpl(pluginInfo,
-		pluginInfo.dependedByList, contributions);  // pass on for actual invocation
+	shared actual Runtime plugin = PluginRuntimeImpl(pluginInfo, contributions);  // pass on for actual invocation
 
+	variable Plugin? pluginInstance = null;
 	// instantiate class and interface from info and inject the run-time
-	value instantiable = pluginInfo.pluginClass.apply(`Runtime`);
-	Plugin instance = instantiable(plugin);	
+	//value instantiable = pluginInfo.pluginClass.apply();
+	value instantiable = pluginInfo.pluginClass.apply(`PluginInfo & PluginRuntime`);
+	if (is Class<Anything, [PluginInfo & PluginRuntime]> instantiable) {
+		value instance = instantiable(plugin);
+		if (is Plugin instance) {
+			pluginInstance = instance;
+		}
+	}
 
 	shared actual void start() {
-		
+		if (exists p = pluginInstance) {
+			p.start();
+		}
 	}
 	
 	shared actual void stop() {
-		
+		if (exists p = pluginInstance) {
+			p.stop();
+		}		
 	}
 
 	shared actual void configure( Config config) {
-		
+		if (exists p = pluginInstance) {
+			p.configure(config);
+		}		
 	}	
 }
 
