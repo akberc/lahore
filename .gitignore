@@ -1,6 +1,6 @@
 /modules
 /classes
-/.ceylon
 /.openshift
 /.classpath
+/.settings
 /.project

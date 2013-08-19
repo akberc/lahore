@@ -1,0 +1,17 @@
+
+[defaults]
+encoding=UTF-8
+offline=false
+
+[repositories]
+remote=http://modules.dgwave.com/repo
+remote=mvn:http://repo1.maven.org/maven2
+
+[lahore]
+environment=DEV
+debug=5
+
+[lahore "plugins"]
+preload=com.dgwave.lahore.system/0.1
+preload=com.dgwave.lahore.help/0.1
+preload=com.dgwave.lahore.menu/0.1

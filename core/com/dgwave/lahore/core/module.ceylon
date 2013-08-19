@@ -19,8 +19,8 @@ module com.dgwave.lahore.core '0.1' {
 	import javax.xml '7';	
 	import org.jboss.modules 'main';
 	import org.yaml.snakeyaml '1.11';
-	import org.jruby.joni '2.0.0';
-	import org.jruby.jcodings '1.0.10';	
+	import org.jruby.joni.joni '2.0.0';
+	import org.jruby.jcodings.jcodings '1.0.10';	
 	
 	import ceylon.test '0.6';
 }
