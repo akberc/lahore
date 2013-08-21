@@ -98,7 +98,7 @@ shared Config? parseYamlAsConfig(String yamlString) {
 			inArray = false;
 		} 				
 		else {
-			print("Unknown event: ``e.string``");
+			watchdog(7, "Yaml", "Unknown YAML parsing event: ``e.string``");
 		}
 		lastEvent = e; // saving last event
 	}

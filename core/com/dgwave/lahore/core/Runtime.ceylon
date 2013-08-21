@@ -120,7 +120,7 @@ shared class PluginImpl (scope, pluginInfo, config) satisfies Plugin {
 	shared PluginInfoImpl pluginInfo;
 	shared Config config;
 	
-	value routes = LinkedList<WebRoute>();
+	shared LinkedList<WebRoute> routes = LinkedList<WebRoute>();
 			
 	shared actual Runtime plugin = PluginRuntimeImpl(pluginInfo);  // pass on for actual invocation
 

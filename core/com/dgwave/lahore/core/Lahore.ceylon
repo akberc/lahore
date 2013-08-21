@@ -8,7 +8,7 @@ import ceylon.net.http { contentType, contentLength, get }
 import ceylon.io.charset { utf8 }
 import com.dgwave.lahore.api { watchdog, Context, Storage, Entity, Config, Assocable }
 import ceylon.collection { HashMap }
-import com.dgwave.lahore.core.component { SqlStorage, fileStorage, SystemConfig, AssocConfig, plugins }
+import com.dgwave.lahore.core.component { SqlStorage, fileStorage, SystemConfig, AssocConfig}
 
 doc ("The Lahore instance")
 by ("Akber Choudhry")

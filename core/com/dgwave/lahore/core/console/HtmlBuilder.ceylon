@@ -14,7 +14,7 @@ shared class HtmlBuilder(String path) {
                 "<head>\n" +
                 "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=UTF-8\">\n" +
                 "<title>Lahore Console</title>\n" +
-                "<link href=\"" +  path + "/css/bootstrap.css\" rel=\"stylesheet\">\n" +
+                "<link href=\"" +  path + "/css/bootstrap.min.css\" rel=\"stylesheet\">\n" +
                 "<link href=\"" + path + "/css/bootstrap-responsive.min.css\" rel=\"stylesheet\">"+
                 "<link href=\"" +  path + "/css/style.css\" rel=\"stylesheet\">\n" +
                 "</head>\n" +

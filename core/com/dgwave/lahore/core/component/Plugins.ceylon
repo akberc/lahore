@@ -71,10 +71,17 @@ class Plugins() {
 				if (exists pluginName) { // should always exit
 					if (exists pluginDesc) {
 						if (exists pluginConfigure) {
-						  pluginInfos.put(pluginId, PluginInfoImpl(
-							pluginId, pluginName, pluginDesc, pluginConfigure,
-							cmName, cmVersion,
-							pluginClass, contribInterface, contribImpls));
+						  pluginInfos.put(pluginId, PluginInfoImpl {
+							moduleName = cmName;
+							moduleVersion = cmVersion;						  	
+							id = pluginId;
+							name = pluginName; 
+							description = pluginDesc; 
+							configurationLink = pluginConfigure;
+							pluginClass = pluginClass; 
+							contributionInterface = contribInterface; 
+							contributeList = contribImpls;
+						  });
 						  pluginContributions.put(pluginId, contribImpls);
 						}
 					}
@@ -223,12 +230,23 @@ class Plugins() {
 		}
 		//startPlugin(pluginId);
 	}
-	shared Array getImplementations(String hook) { return nothing; }
-	shared Assoc invoke(String name, String hook, Array args) { return nothing; }
-	shared Array getAdminTasks(String name, String string) { return nothing; }
-	shared Boolean implementsHook(String mod, String hook) {
-		return false; 
-	}	
+
+	shared {WebRoute*} routesFor({String*} sitePlugins, Boolean all) { 
+		
+		{String*} lookFor = all then pluginFinals.keys else 
+			pluginFinals.keys.filter((String k) => sitePlugins.contains(k));
+		
+		return { 
+			for (lf in lookFor) 
+				if (exists pf = pluginFinals.get(lf)) 
+					for (r in pf.routes.sequence) r
+		};
+	}
+	
+	shared {Assoc*} getAdminTasks(String pluginId) { 
+		return {}; 
+	}
+	
 }
 
 
@@ -236,11 +254,11 @@ shared object plugins {
 	Plugins mh = Plugins();
 	
 	shared {Assoc*} adminTasks(String pluginId) { 
-		return {}; 
+		return mh.getAdminTasks(pluginId);
 	}
 	
-	shared {WebRoute*} routesFor({String*} sitePlugins) { 
-		return nothing; 
+	shared {WebRoute*} routesFor({String*} sitePlugins, Boolean all = false) { 
+		return mh.routesFor(sitePlugins, all); 
 	}
 	
 	shared PluginImpl? plugin(String pluginId) { 

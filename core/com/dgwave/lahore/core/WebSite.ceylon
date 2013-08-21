@@ -22,22 +22,25 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
 	shared actual Path staticURI = parseURI(siteConfig.stringWithDefault("static", 
 		siteStaticDir.uriString));
 	shared actual Config config = siteConfig;
-	shared actual {String*} enabledPlugins = {"system", "help", "menu"}; // FIXME via inherit and site.yaml
+	shared actual {String*} enabledPlugins = config.stringsWithDefault("enabledPlugins", {});
 	shared actual {Method*} acceptMethods = {get, post};
 	shared actual default {WebRoute*} webRoutes = 
-		context == "/admin" then plugins.adminRoutes() else plugins.routesFor(enabledPlugins);
+		context == "/admin" then 
+			plugins.routesFor(enabledPlugins, true)
+			.filter((WebRoute wr) => wr.path.startsWith("/admin") || wr.path.startsWith("admin")) 
+		else plugins.routesFor(enabledPlugins);
 	shared actual Matcher matcher = ParamMatcher(context);
 	
-	String? page404 = siteConfig.stringOnly("pages.404");
-	String? page403 = siteConfig.stringOnly("pages.403");
-	String? pageFront = siteConfig.stringOnly("pages.front");
+	String? page404 = config.stringOnly("pages.404");
+	String? page403 = config.stringOnly("pages.403");
+	String? pageFront = config.stringOnly("pages.front");
 
 	
 	doc("Web request/response service")
 	shared actual Anything(Request, Response) endService =>externalService;
 	void externalService (Request req, Response resp) {
 		// create a new context
-		DefaultWebContext dc = DefaultWebContext(lahore.context, systemTheme, siteConfig); 
+		DefaultWebContext dc = DefaultWebContext(lahore.context, systemTheme, config); 
 		dc.put("path",req.path);
 		dc.put("method", req.method.string);
 		dc.put("headers", req.headers);
