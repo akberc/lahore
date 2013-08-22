@@ -231,6 +231,8 @@ class Plugins() {
 		//startPlugin(pluginId);
 	}
 
+  shared String[] list = pluginInfos.keys.sequence;
+ 
 	shared {WebRoute*} routesFor({String*} sitePlugins, Boolean all) { 
 		
 		{String*} lookFor = all then pluginFinals.keys else 
@@ -267,5 +269,7 @@ shared object plugins {
 	
 	shared PluginInfoImpl? info (String pluginId) {
 		return mh.findPluginInfo(pluginId);	}
+	
+	shared String[] list => mh.list;
 }
 

@@ -25,9 +25,8 @@
     </reposet>
     
     <moduleset id="modules.lahore.jvm">
-        <sourcemodules dir="api"/>
+      <sourcemodules dir="api"/>
     	<sourcemodules dir="core"/>
-    	<sourcemodules dir="ext"/>
     	<sourcemodules dir="help"/>
     	<sourcemodules dir="menu"/>
     	<sourcemodules dir="system"/>
@@ -46,7 +45,7 @@
     <target name="compile-jvm">
     	
         <ceylon-compile executable="${ceylon.executable}"
-        	src="api:core:ext:help:menu:system"
+        	src="api:core:help:menu:system"
             verbose="${ceylon.verbosity}"
             encoding="UTF-8">
             <moduleset refid="modules.lahore.jvm"/>
@@ -107,7 +106,6 @@
             <fileset dir="${out.repo}">
             	<include name="com/dgwave/lahore/api/**"/>
                 <include name="com/dgwave/lahore/core/**"/>
-            	<include name="com/dgwave/lahore/ext/**"/>
             	<include name="com/dgwave/lahore/help/**"/>
             	<include name="com/dgwave/lahore/menu/**"/>
             	<include name="com/dgwave/lahore/system/**"/>

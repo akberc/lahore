@@ -1,8 +1,5 @@
 import com.dgwave.lahore.api { Assoc, Array, Markup, ContainedMarkup, ContainerMarkup, Assocable }
 
-by ("Akber Choudhry")
-doc ("Lahore Core type manipulation utilities.")
-license ("Copyright 2013 Digiwave Systems Ltd. (http://www.dgwave.com/)")
 shared class StringPrinter(Boolean pretty = false) extends Printer(pretty){
     
     value builder = StringBuilder();
@@ -43,7 +40,7 @@ shared abstract class Printer(Boolean pretty = false){
     "Override to implement the printing part"
     shared formal void print(String string);
 
-    "Prints an `Object`"
+    "Prints an `Assoc`"
     shared default void printAssoc(Assoc o){
         print("{");
         enter();
@@ -158,14 +155,16 @@ shared abstract class Printer(Boolean pretty = false){
     "Prints a `HtmlFragment`"
     shared default void printMarkup(Markup markup){
 		indent();
-		printHtmlElementOpen(markup.element, markup.attributes);
+		printHtmlElementOpen(markup.element, markup.id, markup.classes, markup.attrs);
 		if (is ContainedMarkup markup) {
 			if (! "" == markup.containedContent) {
+				print(">");
 				print(markup.containedContent + "</" + markup.element + ">");
 			} else {
 				print("/>");
 			}
-		} else if (is ContainerMarkup markup){ 
+		} else if (is ContainerMarkup markup){
+			print(">");			
             enter();
 			for (c in markup.containedFragments) {
 				printMarkup(c);
@@ -176,12 +175,25 @@ shared abstract class Printer(Boolean pretty = false){
 		}
     }
 
-	void printHtmlElementOpen(String element, {Entry<String, String>*} attrs) {
+	void printHtmlElementOpen(String element, String? id, String[] classes, {Entry<String, String>*} attrs) {
+		
 		print("<" + element);
+		
+		if (exists id) {
+			print(" id=\"" + id + "\"" );
+		}
+		
+		if (! classes.empty) {
+			print (" class=\"");
+      for(cls in classes) {
+        print(" " + cls);
+      }
+      print ("\"");
+    }
+		
 		for(a in attrs) {
 			print(" " + a.key + "=\"" + a.item + "\"");
 		}
-		print(">");
 	}        
 }
 

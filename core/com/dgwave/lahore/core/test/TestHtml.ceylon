@@ -9,7 +9,8 @@ void testHtml(){
 		Head {
 			title = PageTitle("Lahore: home page");		},
 		Body {
-			h2({"class"->"big"},"Welcome to Lahore, ``plus(1, 2)`` !"),
-			P("Now, get your act on :)")		}	);
-	assertEquals("<html>\n <head>\n  <title>Lahore: home page</title>\n </head>\n <body>\n  <h1 class=\"big\">Welcome to Lahore, 3 !</h1>\n  <p>Now, get your act on :)</p>\n </body>\n</html>",page.render());
+			H2 { classes=["big"]; content = "Welcome to Lahore, ``plus(1, 2)`` !";},
+			P("Now, get your act on :)")		}, 
+		{"lang" -> "en"}	);
+	assertEquals("<html lang=\"en\">\n <head>\n  <title>Lahore: home page</title>\n </head>\n <body>\n  <h1 class=\"big\">Welcome to Lahore, 3 !</h1>\n  <p>Now, get your act on :)</p>\n </body>\n</html>",page.render());
 }

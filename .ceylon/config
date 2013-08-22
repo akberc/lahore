@@ -4,10 +4,9 @@ encoding=UTF-8
 offline=false
 
 [repositories]
-system=http://modules.dgwave.com/repo
 remote=http://modules.dgwave.com/repo
 remote=http://modules.ceylon-lang.org/test
-remote=mvn:http://repo1.maven.org/maven2
+remote=aether
 
 [lahore]
 environment=DEV

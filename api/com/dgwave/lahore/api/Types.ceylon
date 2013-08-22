@@ -9,14 +9,12 @@ shared class Assoc({Entry<String, Assocable>*} values = {})
     
     value contents = HashMap<String, Assocable>(values);
     
-    "Returns a serialised JSON representation"
     shared actual String string {
         StringPrinter p = StringPrinter();
         p.printAssoc(this);
         return p.string;
     }
 
-    "Returns a pretty-printed serialised JSON representation"
     shared String pretty {
         StringPrinter p = StringPrinter(true);
         p.printAssoc(this);
