@@ -8,9 +8,6 @@ shared void run(){
         "Methods" -> testMethods,
         "Dispatcher" -> testDispatcher,
         "Plugins" -> testPlugins,
-        //"Yaml" -> testYaml,
-		//"Html" -> testHtml,
-		"Template" -> testTemplate,
-		"Regex" -> testRegex
+        "Html" -> testHtml
     );
 }

@@ -1,10 +1,4 @@
-import com.dgwave.lahore.api { Fragment, Result, Markup, Template, ContainedMarkup }
-
-shared class HtmlLiteral(type, String rawContent) extends Markup() satisfies ContainedMarkup{
-	shared String type;
-	shared actual String containedContent = rawContent;
-	
-}
+import com.dgwave.lahore.api { Fragment, Result, Markup, Template }
 
 shared interface Page {
 	shared formal String render();

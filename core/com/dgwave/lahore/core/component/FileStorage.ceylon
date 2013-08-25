@@ -15,7 +15,7 @@ shared class FileStorage( configDir) satisfies Storage<Config> {
 		switch(r)
 		case (is File) {
 			if (relativePath.endsWith("yml") || relativePath.endsWith("yaml")) {
-				return parseYamlAsConfig(readFileAsString(r));	
+				return parseJsonAsConfig(readFileAsString(r));	
 			} else {
 				watchdog(3, "FileStorage", "Configuration file ``relativePath`` is not supported");
 				return null;
@@ -42,7 +42,21 @@ shared class FileStorage( configDir) satisfies Storage<Config> {
 		return false;
 	}
 	
-	shared actual Path basePath => configDir.path;	
+	shared actual Path basePath => configDir.path;
+	
+  shared String readFileAsString(File file) {  
+    value sb = StringBuilder();
+    value reader = file.reader();
+    try {
+      while(exists line = reader.readLine()) {
+        sb.append(line);
+        sb.append("\n");
+      }
+    } finally {
+      reader.close(null);
+    }
+    return sb.string;
+  }	
 }
 
 doc("This is a convenience method. Responsibility of the client to keep or discard the storage")
@@ -67,19 +81,4 @@ shared FileStorage fileStorage(Path path) {
 	} catch (Exception ex) {
 		throw ex;
 	}
-}
-
-
-shared String readFileAsString(File file) {  
-	value sb = StringBuilder();
-	value reader = file.reader();
-	try {
-		while(exists line = reader.readLine()) {
-			sb.append(line);
-			sb.append("\n");
-		}
-	} finally {
-		reader.close(null);
-	}
-	return sb.string;
 }

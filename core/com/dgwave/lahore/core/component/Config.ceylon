@@ -1,6 +1,7 @@
-import com.dgwave.lahore.api { Config, Assoc, Array, assoc }
+import com.dgwave.lahore.api { Config, Assoc, Array, assoc, Assocable }
 import com.redhat.ceylon.common.config { CeylonConfig }
 import java.lang {JavaString = String,  ObjectArray }
+import ceylon.json { parse, JsonObject = Object }
 
 shared abstract class AbstractConfig() satisfies Config {
 	shared actual default void load(Assoc assoc) {} 
@@ -53,8 +54,8 @@ shared class SystemConfig() extends AbstractConfig() {
 	}	
 }
 
-shared class AssocConfig() extends AbstractConfig() {
-	variable Assoc assoc = Assoc();
+shared class AssocConfig(assoc = Assoc()) extends AbstractConfig() {
+	variable Assoc assoc;
 
 	shared actual String[] stringsWithDefault(String key, String[] defValues) {
 		if (exists a = assoc.getArray(key)) {
@@ -73,4 +74,20 @@ shared class AssocConfig() extends AbstractConfig() {
 		}
 		return sb.sequence;
 	}	
+}
+
+shared Config? parseJsonAsConfig(String jsonString) {
+  
+  try {
+    JsonObject jsonObj = parse(jsonString);
+    Assoc assoc = Assoc();
+    for (an in jsonObj) {
+      if (is Assocable another = an.item) {
+        assoc.put(an.key, another);
+      }
+    }
+    return AssocConfig(assoc);
+  } catch (Exception e) {
+    return null;
+  } 
 }

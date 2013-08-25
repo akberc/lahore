@@ -6,11 +6,10 @@ offline=false
 [repositories]
 remote=http://modules.dgwave.com/repo
 remote=http://modules.ceylon-lang.org/test
-remote=aether
 
 [lahore]
 environment=DEV
-debug=5
+debugLevel=3
 
 [lahore "plugins"]
 preload=com.dgwave.lahore.system/0.1

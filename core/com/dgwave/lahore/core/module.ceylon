@@ -7,20 +7,17 @@ module com.dgwave.lahore.core '0.1' {
 	import ceylon.net '0.6';
 	import ceylon.io '0.6';
 	import ceylon.file '0.6';
-	import ceylon.collection '0.6';	
+	import ceylon.collection '0.6';
+	import ceylon.json '0.6';
+
+  import java.base '7';
 
 	import com.redhat.ceylon.common '0.6';
 	import com.redhat.ceylon.typechecker '0.6';
 	import 'com.redhat.ceylon.module-resolver' '0.6';
+	import org.jboss.modules 'main';
 		
 	shared import com.dgwave.lahore.api '0.1'; //only one shared
-	
-	import java.base '7';
-	import javax.xml '7';	
-	import org.jboss.modules 'main';
-	import org.yaml.snakeyaml '1.11';
-	import org.jruby.joni.joni '2.0.0';
-	import org.jruby.jcodings.jcodings '1.0.10';	
 	
 	import ceylon.test '0.6';
 }

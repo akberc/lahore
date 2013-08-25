@@ -187,27 +187,27 @@ shared class HtmlBuilder(String path) {
         }
       };
      
-      Tr makeTr (Task task) {
-        String onClickDone="onclick=\"document.location='?q=" + q + "&" + (task.done then "markNotDone" else "markDone") + "=" + task.id + "'\"";
-        String onClickRemove="onclick=\"document.location='?q=" + q + "&remove=" + task.id + "'\"";
-  
-        return Tr( {
-          Td (Label {classes=["checkbox"];)
-        });
-      }
-      for (Task task in dao.tasks(q)) {
-
-        html += "<tr>\n";
-        html += "<td>\n";
-        html += "<label class=\"checkbox\">\n";
-        html += "<input type=\"checkbox\"" + (task.done then "checked=\"checked\"" else "");
-        html += " " + onClickDone + "/>\n";
-        html += "<span class=\"" + (task.done then "taskDone" else "taskNotDone") + "\">" +  task.message + "</span>\n";
-        html += "</label>\n";
-        html += "</td>\n";
-        html += "<td width=\"20px\">\n";
-        html += "<i class=\"icon-remove\" " + onClickRemove + "/>\n";
-        html += "</td>\n";
-        html += "</tr>\n";
+  //    Tr makeTr (Task task) {
+  //      String onClickDone="onclick=\"document.location='?q=" + q + "&" + (task.done then "markNotDone" else "markDone") + "=" + task.id + "'\"";
+  //      String onClickRemove="onclick=\"document.location='?q=" + q + "&remove=" + task.id + "'\"";
+  //
+  //      return Tr( {
+  //        Td (Label {classes=["checkbox"];})
+  //      });
+  //    }
+//      for (Task task in dao.tasks(q)) {
+//
+//        html += "<tr>\n";
+//        html += "<td>\n";
+//        html += "<label class=\"checkbox\">\n";
+//        html += "<input type=\"checkbox\"" + (task.done then "checked=\"checked\"" else "");
+//        html += " " + onClickDone + "/>\n";
+//        html += "<span class=\"" + (task.done then "taskDone" else "taskNotDone") + "\">" +  task.message + "</span>\n";
+//        html += "</label>\n";
+//        html += "</td>\n";
+//        html += "<td width=\"20px\">\n";
+//        html += "<i class=\"icon-remove\" " + onClickRemove + "/>\n";
+//        html += "</td>\n";
+//        html += "</tr>\n";
     }
 }
