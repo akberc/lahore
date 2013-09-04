@@ -64,7 +64,7 @@ class HelpController(plugin) satisfies Controller {
 	    if (plugin.isContributedToBy(otherPluginName)) {
 	        
 	      value temp = plugin.contributionFrom(otherPluginName, 
-	      	`HelpContribution.help`, c.passing("path", "admin/help#" + otherPluginName));
+	      	`function HelpContribution.help`, c.passing("path", "admin/help#" + otherPluginName));
 		  
 		  if (exists temp) {
 			build.put("top", assoc ("#markup" -> temp.string) );  

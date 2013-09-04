@@ -32,7 +32,7 @@ void testPlugins() {
 	
 	PluginInfoImpl info = PluginInfoImpl("test", "Test", 
 		"com.dgwave.lahore.test", "0.x", "Test Description", "/admin/test/configure",
-		 `TestPlugin`, `TestContribution`, [contribName], ["one", "two"], ["four", "five"],
+		 `class TestPlugin`, `interface TestContribution`, [contribName], ["one", "two"], ["four", "five"],
 		 [resName], [servName]);
 	
 	Runtime runtime = PluginRuntimeImpl(info);

@@ -51,7 +51,9 @@ object lahore {
 
         variable String dataURI = bootConfig.stringWithDefault("lahore.dataStore", 
 			home.absolutePath.childPath("data").uriString); // default value
-		configURI = configURI.replace("{lahore.home}", home.uriString); // replace placeholder
+		dataURI = dataURI.replace("{lahore.home}", home.uriString); // replace placeholder
+		// FIXME
+		dataURI = "lahore/data";
     	shared actual Storage<Entity> entityStorage = SqlStorage(parsePath(dataURI));
     	    	
     	shared actual Path staticResourcePath(String type, String name) { return home.childPath("static").childPath(name + "." + type);}

@@ -60,7 +60,7 @@ shared class FileStorage( configDir) satisfies Storage<Config> {
 }
 
 doc("This is a convenience method. Responsibility of the client to keep or discard the storage")
-throws(`Exception`)
+throws(`class Exception`)
 shared FileStorage fileStorage(Path path) {
 	Resource dir = path.resource;
 	try {

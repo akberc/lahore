@@ -21,7 +21,6 @@ public class Loader {
 		try {
 			
 			List<String> toLoad = new ArrayList<String>();
-			toLoad.add("com.redhat.ceylon.typechecker/0.6");  // FIXME version
 			toLoad.addAll(Arrays.asList(CeylonConfig.get().getOptionValues("lahore.plugins.preload")));
 			String [] toLoadNames = toLoad.toArray(new String[] {});
 

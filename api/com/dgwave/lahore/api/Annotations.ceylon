@@ -1,30 +1,30 @@
 import ceylon.language.model { OptionalAnnotation, SequencedAnnotation }
-import ceylon.language.model.declaration { FunctionDeclaration }
+import ceylon.language.model.declaration { FunctionDeclaration, ClassDeclaration }
 
 "The annotation class for [[id]]."
 shared final annotation class Id(shared String id)
-        satisfies OptionalAnnotation<Id, Plugin> {}
+        satisfies OptionalAnnotation<Id, ClassDeclaration> {}
 
 "Annotation to specify Lahore module short id" 
 shared annotation Id id(String id) => Id(id);
 
 "The annotation class for [[name]]."
 shared final annotation class Name(shared String name, shared String locale)
-        satisfies OptionalAnnotation<Name, Plugin> {}
+        satisfies OptionalAnnotation<Name, ClassDeclaration> {}
 
 "Annotation to specify Lahore module human-friendly name" 
 shared annotation Name name(String name, String locale ="en") => Name(name, locale);
 
 "The annotation class for [[description]]."
 shared final annotation class Description(shared String description, shared String locale)
-        satisfies OptionalAnnotation<Description, Plugin> {}
+        satisfies OptionalAnnotation<Description, ClassDeclaration> {}
 
 "Annotation to specify Lahore module description" 
 shared annotation Description description(String description, String locale ="en") => Description(description, locale);
 
 "The annotation class for [[configure]]."
 shared final annotation class Configure(shared String configureLink)
-        satisfies OptionalAnnotation<Configure, Plugin> {}
+        satisfies OptionalAnnotation<Configure, ClassDeclaration> {}
 
 "Annotation to specify module configuration URL" 
 shared annotation Configure configure(String configureLink) => Configure(configureLink);
@@ -78,7 +78,7 @@ shared object rTHEME extends ResourceType() { shared actual String string = "THE
 shared object rTEMPLATE extends ResourceType() { shared actual String string = "TEMPLATE"; }
 
 shared final annotation class ResourceAnnotation( shared ResourceType type, shared String name) 
-        satisfies OptionalAnnotation<ResourceAnnotation, Resource> {}
+        satisfies OptionalAnnotation<ResourceAnnotation, ClassDeclaration> {}
 
 "Annotation to specify the resource type and name" 
 shared annotation ResourceAnnotation resource(ResourceType type, String name) => ResourceAnnotation(type, name);
@@ -90,7 +90,7 @@ shared object sENTITY extends ServiceType() { shared actual String string = "ENT
 shared object sTASK extends ServiceType() { shared actual String string = "TASK"; }
 
 shared final annotation class ServiceAnnotation(shared ServiceType type, shared String name) 
-        satisfies OptionalAnnotation<ServiceAnnotation, Service> {}
+        satisfies OptionalAnnotation<ServiceAnnotation, ClassDeclaration> {}
 
 "Annotation to specify the resource type and name" 
 shared annotation ServiceAnnotation service(ServiceType type, String name) => ServiceAnnotation(type, name);
