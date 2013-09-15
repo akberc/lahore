@@ -35,7 +35,7 @@ shared final annotation class RouteAnnotation(shared String routeName, shared St
 
 "Annotation to specify Lahore web route" 
 shared annotation RouteAnnotation route (String routeName, String routePath) 
-	=> RouteAnnotation(routeName, routePath);
+        => RouteAnnotation(routeName, routePath);
 
 "The annotation class for [[permission]]."
 shared final annotation class Permission(shared String permission)
@@ -46,9 +46,9 @@ shared annotation Permission permission(String permission) => Permission(permiss
 
 "The annotation class for [[methods]]."
 shared abstract class HttpMethod()
-	of httpGET | httpPOST | httpPUT | httpHEAD | httpDELETE | httpTRACE | httpCONNECT |
-		httpOPTIONS | httpPROPFIND | httpPROPPATCH | httpMKCOL |
-		httpCOPY | httpMOVE | httpLOCK | httpUNLOCK {}
+        of httpGET | httpPOST | httpPUT | httpHEAD | httpDELETE | httpTRACE | httpCONNECT |
+        httpOPTIONS | httpPROPFIND | httpPROPPATCH | httpMKCOL |
+        httpCOPY | httpMOVE | httpLOCK | httpUNLOCK {}
 shared object httpGET extends HttpMethod() { shared actual String string = "GET"; }
 shared object httpPOST extends HttpMethod() { shared actual String string = "POST"; }
 shared object httpPUT extends HttpMethod() { shared actual String string = "PUT"; }
@@ -73,7 +73,7 @@ shared annotation Methods methods(HttpMethod method) => Methods(method);
 
 "The annotation class for [[resource]]."
 shared abstract class ResourceType()
-	of rTHEME | rTEMPLATE {}
+        of rTHEME | rTEMPLATE {}
 shared object rTHEME extends ResourceType() { shared actual String string = "THEME"; }
 shared object rTEMPLATE extends ResourceType() { shared actual String string = "TEMPLATE"; }
 
@@ -85,7 +85,7 @@ shared annotation ResourceAnnotation resource(ResourceType type, String name) =>
 
 "The annotation class for [[service]]."
 shared abstract class ServiceType()
-	of sENTITY | sTASK {}
+        of sENTITY | sTASK {}
 shared object sENTITY extends ServiceType() { shared actual String string = "ENTITY"; }
 shared object sTASK extends ServiceType() { shared actual String string = "TASK"; }
 

@@ -1,7 +1,7 @@
 import com.dgwave.lahore.api { Assoc, Array, Markup, ContainedMarkup, ContainerMarkup, Assocable }
 
 shared class StringPrinter(Boolean pretty = false) extends Printer(pretty){
-    
+
     value builder = StringBuilder();
 
     "Appends the given value to our `String` representation"
@@ -15,17 +15,17 @@ shared class StringPrinter(Boolean pretty = false) extends Printer(pretty){
 
 "A Markup Dumper"
 shared abstract class Printer(Boolean pretty = false){
-    
+
     variable Integer level = 0;
-    
+
     void enter(){
         level++;
     }
-    
+
     void leave(){
         level--;
     }
-    
+
     void indent(){
         if(pretty){
             print("\n");
@@ -36,7 +36,7 @@ shared abstract class Printer(Boolean pretty = false){
             }
         }
     }
-    
+
     "Override to implement the printing part"
     shared formal void print(String string);
 
@@ -46,18 +46,18 @@ shared abstract class Printer(Boolean pretty = false){
         enter();
         variable Boolean once = true; 
         for(entry in o){
-	        if(once){
-	            once = false;
-	        }else{
-	            print(",");
-	        }
-	        indent();
-	        printString(entry.key);
-	        print(":");
-	        if(pretty){
-	            print(" ");
-	        }
-	        printValue(entry.item);
+            if(once){
+                once = false;
+            }else{
+                print(",");
+            }
+            indent();
+            printString(entry.key);
+            print(":");
+            if(pretty){
+                print(" ");
+            }
+            printValue(entry.item);
         }
         leave();
         if(!once){
@@ -128,7 +128,7 @@ shared abstract class Printer(Boolean pretty = false){
     shared default void printNull(){
         print("null");
     }
-    
+
     "Prints a value"
     shared default void printValue(Assocable val){
         switch(val)
@@ -154,46 +154,46 @@ shared abstract class Printer(Boolean pretty = false){
 
     "Prints a `HtmlFragment`"
     shared default void printMarkup(Markup markup){
-		indent();
-		printHtmlElementOpen(markup.element, markup.id, markup.classes, markup.attrs);
-		if (is ContainedMarkup markup) {
-			if (! "" == markup.containedContent) {
-				print(">");
-				print(markup.containedContent + "</" + markup.element + ">");
-			} else {
-				print("/>");
-			}
-		} else if (is ContainerMarkup markup){
-			print(">");			
+        indent();
+        printHtmlElementOpen(markup.element, markup.id, markup.classes, markup.attrs);
+        if (is ContainedMarkup markup) {
+            if (! "" == markup.containedContent) {
+                print(">");
+                print(markup.containedContent + "</" + markup.element + ">");
+            } else {
+                print("/>");
+            }
+        } else if (is ContainerMarkup markup){
+            print(">");			
             enter();
-			for (c in markup.containedFragments) {
-				printMarkup(c);
-			}
-			leave();
-        	indent();			
-			print("</" + markup.element + ">");
-		}
+            for (c in markup.containedFragments) {
+                printMarkup(c);
+            }
+            leave();
+            indent();			
+            print("</" + markup.element + ">");
+        }
     }
 
-	void printHtmlElementOpen(String element, String? id, String[] classes, {Entry<String, String>*} attrs) {
-		
-		print("<" + element);
-		
-		if (exists id) {
-			print(" id=\"" + id + "\"" );
-		}
-		
-		if (! classes.empty) {
-			print (" class=\"");
-      for(cls in classes) {
-        print(" " + cls);
-      }
-      print ("\"");
-    }
-		
-		for(a in attrs) {
-			print(" " + a.key + "=\"" + a.item + "\"");
-		}
-	}        
+    void printHtmlElementOpen(String element, String? id, String[] classes, {Entry<String, String>*} attrs) {
+        
+        print("<" + element);
+        
+        if (exists id) {
+            print(" id=\"" + id + "\"" );
+        }
+        
+        if (! classes.empty) {
+            print (" class=\"");
+            for(cls in classes) {
+                print(" " + cls);
+            }
+            print ("\"");
+        }
+        
+        for(a in attrs) {
+            print(" " + a.key + "=\"" + a.item + "\"");
+        }
+    }        
 }
 

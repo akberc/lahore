@@ -17,64 +17,64 @@ shared variable Integer lahoreDebugLevel =9;
 
 
 object lahore {
-	shared variable Boolean booted = false;
-		
-	Config bootConfig = SystemConfig();
-	
-	shared Path home {
-		if (exists h = process.namedArgumentValue("lahore.home")) {
-			return parseURI(h);
-		} else {
-			return parseURI(bootConfig.stringWithDefault("lahore.home", 
-				current.childPath("lahore").uriString));
-		} 
-	}
+    shared variable Boolean booted = false;
     
-	shared String version = `lahore`.declaration.packageContainer.container.version;
+    Config bootConfig = SystemConfig();
+    
+    shared Path home {
+        if (exists h = process.namedArgumentValue("lahore.home")) {
+            return parseURI(h);
+        } else {
+            return parseURI(bootConfig.stringWithDefault("lahore.home", 
+            current.childPath("lahore").uriString));
+        } 
+    }
+    
+    shared String version = `lahore`.declaration.containingModule.version;
     
     shared String environment = bootConfig.stringWithDefault("lahore.environment", "DEV");
-	
-	if (exists p = parseInteger(bootConfig.stringWithDefault("lahore.debugLevel", "9"))) {
-		lahoreDebugLevel = p;
+    
+    if (exists p = parseInteger(bootConfig.stringWithDefault("lahore.debugLevel", "9"))) {
+        lahoreDebugLevel = p;
     }
     
     shared object context satisfies Context {
-
+        
         variable String configURI = bootConfig.stringWithDefault("lahore.configStore", 
-			home.absolutePath.childPath("config").uriString); // default value
-		configURI = configURI.replace("{lahore.home}", home.uriString); // replace placeholder
-		// FIXME
-		configURI = "lahore/config";
-    	shared actual Storage<Config> configStorage = fileStorage(parsePath(configURI));
-		
-		// TODO based on actual URI scheme
-
+        home.absolutePath.childPath("config").uriString); // default value
+        configURI = configURI.replace("{lahore.home}", home.uriString); // replace placeholder
+        // FIXME
+        configURI = "lahore/config";
+        shared actual Storage<Config> configStorage = fileStorage(parsePath(configURI));
+        
+        // TODO based on actual URI scheme
+        
         variable String dataURI = bootConfig.stringWithDefault("lahore.dataStore", 
-			home.absolutePath.childPath("data").uriString); // default value
-		dataURI = dataURI.replace("{lahore.home}", home.uriString); // replace placeholder
-		// FIXME
-		dataURI = "lahore/data";
-    	shared actual Storage<Entity> entityStorage = SqlStorage(parsePath(dataURI));
-    	    	
-    	shared actual Path staticResourcePath(String type, String name) { return home.childPath("static").childPath(name + "." + type);}
-
-    	shared actual Context passing(String string, Assocable arg)  {return this;}
-		shared actual Assocable passed(String key)  {return "";} 
-	}
-
+        home.absolutePath.childPath("data").uriString); // default value
+        dataURI = dataURI.replace("{lahore.home}", home.uriString); // replace placeholder
+        // FIXME
+        dataURI = "lahore/data";
+        shared actual Storage<Entity> entityStorage = SqlStorage(parsePath(dataURI));
+        
+        shared actual Path staticResourcePath(String type, String name) { return home.childPath("static").childPath(name + "." + type);}
+        
+        shared actual Context passing(String string, Assocable arg)  {return this;}
+        shared actual Assocable passed(String key)  {return "";} 
+    }
+    
     shared void boot() {
-	
-	    if (is Directory homeDir = home.resource) {
-				watchdog(0, "Lahore", "Using home directory: ``homeDir``");
-		} else {
-			watchdog(0, "Lahore", "Lahore home directory ``home`` does not exist, please use -Dlahore.home='someDir' OR create a 'lahore' directory in the current directory");
-			process.exit(1);
-		}
-
-		Loader().registerExtensions();
-		booted = true;
-	}
-	
+        
+        if (is Directory homeDir = home.resource) {
+            watchdog(0, "Lahore", "Using home directory: ``homeDir``");
+        } else {
+            watchdog(0, "Lahore", "Lahore home directory ``home`` does not exist, please use -Dlahore.home='someDir' OR create a 'lahore' directory in the current directory");
+            process.exit(1);
+        }
+        
+        Loader().registerExtensions();
+        booted = true;
+    }
+    
     shared HashMap<String, Server> servers= HashMap<String, Server>();
     shared HashMap<String, Site> sites = HashMap<String, Site>();    	  
 }
@@ -86,109 +86,109 @@ shared Boolean lahoreBooted => lahore.booted;
 
 doc ("Run the `Lahore` engine.")
 shared void run() {
-	watchdog(0, "Lahore", "VM version: " + process.vmVersion);
+    watchdog(0, "Lahore", "VM version: " + process.vmVersion);
     watchdog(0, "Lahore", "Operating System: " + process.os + " - " + process.osVersion);
     watchdog(0, "Lahore", "VM Arguments: " + process.arguments.string);
     watchdog(0, "Lahore", "Lahore version: 0.1");
-
-	watchdog(0, "Lahore", "Using Lahore boot directory: ``lahore.home.string``");
-	lahore.boot();
-	createServers();	 	 	
- } // end of run	   
+    
+    watchdog(0, "Lahore", "Using Lahore boot directory: ``lahore.home.string``");
+    lahore.boot();
+    createServers();	 	 	
+} // end of run	   
 
 shared void createServers() {
     Server adminServer = createServer {};
-	adminServer.addListener(consoleListener);
-	loadAdminSite(adminServer);
-	if (exists site = lahore.sites.first) {
-		lahore.servers.put(site.item.host + ":" + site.item.port.string + " (admin)", adminServer);
-	
-		if (lahore.environment == "DEV") {
-			adminServer.start(site.item.port, site.item.host);
-		} else {
-			adminServer.startInBackground(site.item.port, site.item.host); // throw in background
-		}
-		loadOtherSites();
-	}   
+    adminServer.addListener(consoleListener);
+    loadAdminSite(adminServer);
+    if (exists site = lahore.sites.first) {
+        lahore.servers.put(site.item.host + ":" + site.item.port.string + " (admin)", adminServer);
+        
+        if (lahore.environment == "DEV") {
+            adminServer.start(site.item.port, site.item.host);
+        } else {
+            adminServer.startInBackground(site.item.port, site.item.host); // throw in background
+        }
+        loadOtherSites();
+    }   
 }
 
 void loadOtherSites() {   
-	Resource configDir = lahore.context.configStorage.basePath.resource;
-	if (is Directory configDir) {	
-		for (d  in configDir.childDirectories("*.site")) {
-			if (is File f = d.childResource("site.yaml")) {
-				watchdog(5, "Lahore", "Loading site from `` f.name`` ");
-
-			}
-		}
-	}
+    Resource configDir = lahore.context.configStorage.basePath.resource;
+    if (is Directory configDir) {	
+        for (d  in configDir.childDirectories("*.site")) {
+            if (is File f = d.childResource("site.yaml")) {
+                watchdog(5, "Lahore", "Loading site from `` f.name`` ");
+                
+            }
+        }
+    }
 }
 
 void loadAdminSite(Server adminServer) {
- 	if (exists site = loadSite("admin", true)) {
-		// add static endppoint
-	 	if (!site.staticURI.string.startsWith("http")) {
-		    adminServer.addEndpoint(AsynchronousEndpoint {
-		        path = startsWith(site.context + ".site") or pluginStaticPath(site.enabledPlugins);
-		        service => serveStaticFile(site.staticURI.parent.string);
-		        acceptMethod = {get};
-		    });
-		    watchdog(0, "Lahore", "Serving static files for site ``site.context`` from ``site.staticURI.parent.string``.");
-		} else { //TODO redirect on http URI
-			watchdog(1, "Lahore", site.staticURI.system.string + defaultSystem.string);
-		}
-		// add console which should not depend on any module/site or engine
-	    adminServer.addEndpoint(Endpoint {
-	        path = startsWith(site.context + "/console");
-	        service => console;
-	    });
-
-		// add all admin routes
-	    adminServer.addEndpoint(Endpoint {
-	        path = startsWith(site.context);
-	        service => site.endService;
-	    });
-	    	    			    		
-		//home page - move to main site
-		adminServer.addEndpoint(Endpoint {
-	        path = isRoot();
-	        service => webPage(site.staticURI.string + "/index.html");
-	    });
-	    lahore.sites.put(site.host + ":" + site.port.string + "/" + "admin", site);
-
-  	} else {
- 		watchdog(0, "Lahore", "Admin site could not be loaded - will end now!");
- 	}
+    if (exists site = loadSite("admin", true)) {
+        // add static endppoint
+        if (!site.staticURI.string.startsWith("http")) {
+            adminServer.addEndpoint(AsynchronousEndpoint {
+                path = startsWith(site.context + ".site") or pluginStaticPath(site.enabledPlugins);
+                service => serveStaticFile(site.staticURI.parent.string);
+                acceptMethod = {get};
+            });
+            watchdog(0, "Lahore", "Serving static files for site ``site.context`` from ``site.staticURI.parent.string``.");
+        } else { //TODO redirect on http URI
+            watchdog(1, "Lahore", site.staticURI.system.string + defaultSystem.string);
+        }
+        // add console which should not depend on any module/site or engine
+        adminServer.addEndpoint(Endpoint {
+            path = startsWith(site.context + "/console");
+            service => console;
+        });
+        
+        // add all admin routes
+        adminServer.addEndpoint(Endpoint {
+            path = startsWith(site.context);
+            service => site.endService;
+        });
+        
+        //home page - move to main site
+        adminServer.addEndpoint(Endpoint {
+            path = isRoot();
+            service => webPage(site.staticURI.string + "/index.html");
+        });
+        lahore.sites.put(site.host + ":" + site.port.string + "/" + "admin", site);
+        
+    } else {
+        watchdog(0, "Lahore", "Admin site could not be loaded - will end now!");
+    }
 }
 
 
 Site? loadSite(String siteId, Boolean create) {
-	watchdog(2, "Lahore", "Loading site `` siteId`` ");
-	
-	Config? siteConfig = lahore.context.configStorage.load(siteId + ".site/site.yaml");
-	
-	if (exists siteConfig) {
-		return createSite(siteId, siteConfig);
-	} else {
-		if (create) {
-			return createSite(siteId, AssocConfig()); // empty config
-			// TODO write config
-		} else {
-			return null;
-		}
-	}
+    watchdog(2, "Lahore", "Loading site `` siteId`` ");
+    
+    Config? siteConfig = lahore.context.configStorage.load(siteId + ".site/site.yaml");
+    
+    if (exists siteConfig) {
+        return createSite(siteId, siteConfig);
+    } else {
+        if (create) {
+            return createSite(siteId, AssocConfig()); // empty config
+            // TODO write config
+        } else {
+            return null;
+        }
+    }
 }
 
 Site? createSite(String siteId, Config config) {
-	if ("web" == config.stringWithDefault("type", "web")) {
-		return WebSite(siteId, lahore.context.staticResourcePath("site", siteId), config);
-	}
-	else if ("rest" == config.stringWithDefault("type", "web")) {
-		return RestSite(siteId, config);
-	} else {
-		watchdog(0, "Lahore", "Only `web` and `rest` type of sites supported");
-		return null;
-	}
+    if ("web" == config.stringWithDefault("type", "web")) {
+        return WebSite(siteId, lahore.context.staticResourcePath("site", siteId), config);
+    }
+    else if ("rest" == config.stringWithDefault("type", "web")) {
+        return RestSite(siteId, config);
+    } else {
+        watchdog(0, "Lahore", "Only `web` and `rest` type of sites supported");
+        return null;
+    }
 }
 
 void webPage(String pathToFile)(Request request, Response response) {
@@ -200,9 +200,9 @@ void webPage(String pathToFile)(Request request, Response response) {
             
             response.addHeader(contentLength(available.string));
             response.addHeader(contentType { 
-                                    contentType = "text/html"; 
-                                    charset = utf8; 
-                               });
+                contentType = "text/html"; 
+                charset = utf8; 
+            });
             
             /* Simple file read and write to response. 
                As we have no parsing/content modification we should use

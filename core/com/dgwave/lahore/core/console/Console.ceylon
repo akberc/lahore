@@ -8,7 +8,7 @@ import com.dgwave.lahore.api { Task }
 doc ("Adapted from Openshift Ceylon template by Matej Lazar")
 shared void console(Request request, Response response) {
     Session session = request.session;
-    
+
     response.addHeader(contentType { contentType = "text/html"; charset = utf8; });
 
     TaskDAO tasksDAO = TaskDAO(session);
@@ -45,16 +45,15 @@ shared void console(Request request, Response response) {
     response.writeString(htmlPage.html().render());
 }
 
-
 shared object consoleListener satisfies StatusListener {
-	shared LinkedList<String> history = LinkedList<String>();
-	shared actual void onStatusChange(Status status) {
-		addMessage(status.string);
-	}
-	shared void addMessage(String msg) {
-		if (history.size > 100) {
-			history.clear(); //TODO fix tp some configured length
-		}
-		history.add(msg);
-	}
+    shared LinkedList<String> history = LinkedList<String>();
+    shared actual void onStatusChange(Status status) {
+        addMessage(status.string);
+    }
+    shared void addMessage(String msg) {
+        if (history.size > 100) {
+            history.clear(); //TODO fix tp some configured length
+        }
+        history.add(msg);
+    }
 }

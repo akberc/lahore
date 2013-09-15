@@ -16,39 +16,34 @@ import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 
 public class Loader {
 
-	public void registerExtensions() {
+    public void registerExtensions() {
 
-		try {
-			
-			List<String> toLoad = new ArrayList<String>();
-			toLoad.addAll(Arrays.asList(CeylonConfig.get().getOptionValues("lahore.plugins.preload")));
-			String [] toLoadNames = toLoad.toArray(new String[] {});
+        try {
+            
+            List<String> toLoad = new ArrayList<String>();
+            toLoad.addAll(Arrays.asList(CeylonConfig.get().getOptionValues("lahore.plugins.preload")));
+            String [] toLoadNames = toLoad.toArray(new String[] {});
 
-	        RepositoryManager rm = CeylonUtils.repoManager().buildManager(); 
-	        
+            RepositoryManager rm = CeylonUtils.repoManager().buildManager(); 
+            
             for (String ex : toLoadNames) {
-            	String[] nv = ex.split("/");
-                ArtifactContext context = new ArtifactContext(nv[0], nv[1], ArtifactContext.CAR);
+                String[] nv = ex.split("/");
+                ArtifactContext context = new ArtifactContext(nv[0], nv[1], ArtifactContext.CAR, ArtifactContext.JAR);
                 ArtifactResult result = rm.getArtifactResult(context);
                 
                 if (result == null) {
-                    context.setSuffix(ArtifactContext.JAR);
-                    result = rm.getArtifactResult(context);
-                }
-				
-                if (result == null) {
-                	throw new Exception("Plugin: " + ex + " could not be found in configured repositories");
+                    throw new Exception("Plugin: " + ex + " could not be found in configured repositories");
                 } else {
-                	Module onePlugin = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(nv[0], nv[1]));
-                	System.out.println("Loader: Plugin loaded is: " + onePlugin.toString());				
-                	Metamodel.loadModule(nv[0], nv[1], result, onePlugin.getClassLoader());
+                    Module onePlugin = Module.getCallerModuleLoader().loadModule(ModuleIdentifier.create(nv[0], nv[1]));
+                    System.out.println("Loader: Plugin loaded is: " + onePlugin.toString());                
+                    Metamodel.loadModule(nv[0], nv[1], result, onePlugin.getClassLoader());
                 }
-			}
+            }
             
-		} catch (Exception e) {
-			System.err.println("Loader: Error loading plugin ': " + e.getMessage());
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
+        } catch (Exception e) {
+            System.err.println("Loader: Error loading plugin ': " + e.getMessage());
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
 }
