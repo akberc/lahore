@@ -1,13 +1,9 @@
 import com.dgwave.lahore.api { ... }
 import com.dgwave.lahore.help { HelpContribution }
 
-id("menu")
-name("Menu")
-description("Allows administrators to customize the site navigation menu.")
-configure("admin/structure/menu")
-shared class MenuPlugin(plugin) satisfies Plugin & HelpContribution {
+shared class MenuPlugin(Runtime runtime) satisfies Plugin & HelpContribution {
 
-    shared actual Runtime plugin;
+    shared actual Runtime plugin = runtime;
 
     MenuController ctl1 = MenuController();
     MenuEntityForm entForm1 = MenuEntityForm();

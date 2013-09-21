@@ -68,9 +68,11 @@ void testPlugins() {
     // TODO test runtime API
 }
 
-id("test")
-name("Test")
-description("Test Module")
+// FIXME - create module on the fly :)
+
+//id("test")
+//name("Test")
+//description("Test Module")
 shared class TestPlugin(plugin) satisfies Plugin & TestContribution {
     shared actual Runtime plugin;
     

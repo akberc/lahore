@@ -16,11 +16,11 @@ import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 
 public class Loader {
 
-    public void registerExtensions() {
-
-        try {
-            
-            List<String> toLoad = new ArrayList<String>();
+    public List<String> registerExtensions() {
+        
+    	List<String> toLoad = new ArrayList<String>();
+    	
+    	try {    
             toLoad.addAll(Arrays.asList(CeylonConfig.get().getOptionValues("lahore.plugins.preload")));
             String [] toLoadNames = toLoad.toArray(new String[] {});
 
@@ -39,11 +39,11 @@ public class Loader {
                     Metamodel.loadModule(nv[0], nv[1], result, onePlugin.getClassLoader());
                 }
             }
-            
         } catch (Exception e) {
             System.err.println("Loader: Error loading plugin ': " + e.getMessage());
             e.printStackTrace();
             System.exit(1);
         }
+    	return toLoad;
     }
 }

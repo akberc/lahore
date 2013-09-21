@@ -1,24 +1,9 @@
 import com.dgwave.lahore.api { ... }
 import com.dgwave.lahore.menu { Menu, MenuContribution }
 
-id("help")
-name("Help")
-description("Manages the display of online help.")
-shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContribution & TemplateContribution {
+shared class HelpPlugin(Runtime runtime) satisfies Plugin & MenuContribution & HelpContribution & TemplateContribution {
 
-    shared actual Runtime plugin;
-
-    HelpController ctl1 = HelpController(plugin);
-
-    methods(httpGET)
-    route("help_main", "admin/help")
-    permission("access administration pages")
-    shared Result helpMain(Context c) => ctl1.helpMain(c);
-
-    methods(httpGET)
-    route("help_page", "admin/help/{name}")
-    permission("access administration pages")
-    shared Result helpPage(Context c) => ctl1.helpPage(c);
+    shared actual Runtime plugin = runtime;
 
     "Contributes to help"
     shared actual Result help(Context c)  {

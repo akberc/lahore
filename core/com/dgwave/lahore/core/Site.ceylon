@@ -3,7 +3,7 @@ import ceylon.net.http.server { Request, Response, Matcher }
 import ceylon.net.http { HttpMethod = Method }
 import ceylon.file { Path, parsePath }
 import ceylon.collection { HashMap }
-import ceylon.language.model { Method }
+import ceylon.language.meta.model { Method, Function }
 
 doc("A full top-level Dispatcher that handles all methods")
 shared interface Site {
@@ -43,12 +43,16 @@ class ParamMatcher(String context) extends Matcher(){
     relativePath(String requestPath) => requestPath[context.size...];
 }
 
+
 class PluginStaticPath({String*} ps) extends Matcher() {
     matches(String path) => ps.any((String e) => path.startsWith("/" + e + ".plugin"));
     relativePath(String requestPath) => requestPath; // FIXME
 }
+
+
 "Rule using static paths in site-enabled plugins."
 shared Matcher pluginStaticPath({String*} ps) => PluginStaticPath(ps);
+
 
 shared class DefaultWebContext(Context fromContext,  theme, config) 
         extends HashMap<String, Object>() satisfies WebContext {
@@ -105,7 +109,6 @@ shared class DefaultWebContext(Context fromContext,  theme, config)
         }
     }
     
-    
     shared actual String? queryParam(String key) {
         String? val = getAsMap("queryParam").get(key);
         if (exists val) {
@@ -143,18 +146,19 @@ shared class DefaultWebContext(Context fromContext,  theme, config)
 
 
 doc("A simple Web route")
-shared class WebRoute(pluginId, String routeName, Methods[] routeMethods, String routePath, 
-Method<Plugin,Result,[Context]> routeProducer, String? routerPermission = null) {
+shared class WebRoute(pluginId, name, methods, String routePath, produce, String? routerPermission = null) {
     
     shared String pluginId;
     
-    shared String name = routeName;
+    shared String name;
     
-    shared Methods[] methods = routeMethods;
+    shared Methods[] methods;
     
     shared String path = routePath;
     
-    shared Method<Plugin,Result,[Context]> produce = routeProducer;
+    shared Method<Anything,Result,[Context]>
+            | Function<Result,[Context, PluginInfo&PluginRuntime]> produce;
     
-    shared actual String string = "Web Route: from ``pluginId`` with name ``routeName`` : ``methods`` on ``routePath``";
+    shared actual String string = 
+            "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
 }

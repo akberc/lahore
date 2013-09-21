@@ -1,5 +1,4 @@
-import ceylon.language.model.declaration { FunctionDeclaration }
-import ceylon.language.model { Annotated }
+import ceylon.language.meta.declaration { FunctionDeclaration }
 doc(" Any plugin invocation, direct or hooked, should result in one of these.
      Null will not be passed through to the caller, but will get an empty result or a false.
      Assoc is a generic representation of complex objects.  The framework provides some marshallers for Assoc's.
@@ -64,7 +63,7 @@ shared interface PluginRuntime {
 shared alias Runtime => PluginInfo & PluginRuntime;
 
 doc("Interface to be implemented by all Lahore plugins")
-shared interface Plugin satisfies Annotated {
+shared interface Plugin {
     
     shared formal Runtime plugin;
     

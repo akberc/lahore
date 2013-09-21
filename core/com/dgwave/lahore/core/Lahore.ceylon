@@ -7,8 +7,10 @@ import ceylon.io.buffer { ByteBuffer, newByteBuffer }
 import ceylon.net.http { contentType, contentLength, get }
 import ceylon.io.charset { utf8 }
 import com.dgwave.lahore.api { watchdog, Context, Storage, Entity, Config, Assocable }
-import ceylon.collection { HashMap }
+import ceylon.collection { HashMap, LinkedList }
 import com.dgwave.lahore.core.component { SqlStorage, fileStorage, SystemConfig, AssocConfig}
+import java.util { JavaList = List, JavaIterator = Iterator }
+import java.lang { JavaString = String }
 
 doc ("The Lahore instance")
 by ("Akber Choudhry")
@@ -18,7 +20,9 @@ shared variable Integer lahoreDebugLevel =9;
 
 object lahore {
     shared variable Boolean booted = false;
-    
+  
+    shared LinkedList<String> plugins = LinkedList<String>();
+
     Config bootConfig = SystemConfig();
     
     shared Path home {
@@ -71,16 +75,22 @@ object lahore {
             process.exit(1);
         }
         
-        Loader().registerExtensions();
+        JavaList<JavaString> loaded = Loader().registerExtensions();
+        JavaIterator<JavaString> iter = loaded.iterator();
+        while (iter.hasNext()) {
+            plugins.add(iter.next().string);
+        }
+
         booted = true;
     }
     
     shared HashMap<String, Server> servers= HashMap<String, Server>();
-    shared HashMap<String, Site> sites = HashMap<String, Site>();    	  
+    shared HashMap<String, Site> sites = HashMap<String, Site>(); 
 }
 
-shared Map<String, Server>lahoreServers => lahore.servers;
-shared Map<String, Site>lahoreSites => lahore.sites;
+shared Map<String, Server> lahoreServers => lahore.servers;
+shared Map<String, Site> lahoreSites => lahore.sites;
+shared List<String> lahorePlugins => lahore.plugins;
 
 shared Boolean lahoreBooted => lahore.booted;
 

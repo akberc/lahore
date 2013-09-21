@@ -1,8 +1,9 @@
-import com.dgwave.lahore.api { Scope, Config, Plugin, PluginRuntime, PluginInfo, Contribution, Runtime, Contributed, Context, Task, watchdog, Result, Assoc, RouteAnnotation, Methods, Permission }
+import com.dgwave.lahore.api { ... }
 import ceylon.collection { HashMap, LinkedList }
-import ceylon.language.model.declaration { ClassDeclaration, InterfaceDeclaration, FunctionDeclaration }
+import ceylon.language.meta.declaration { ClassDeclaration, InterfaceDeclaration, FunctionDeclaration }
 import com.dgwave.lahore.core.component { plugins, Page, RawPage, TemplatedPage, ConcreteResult }
-import ceylon.language.model { Class, Method }
+import ceylon.language.meta.model { Class, Method, Function }
+import ceylon.language.meta { type }
 
 shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     configurationLink, pluginClass, contributionInterface, 
@@ -80,14 +81,20 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }
         
         shared actual Contributed contributionFrom(String pluginId, 
-        FunctionDeclaration contrib, Context c) {
+                FunctionDeclaration contrib, Context c) {
             try {
                 if (exists cb = contributions.get(pluginId)) {
-                    Method<Contribution, Result, [Context]> m = contrib.memberApply<Contribution, Result, [Context]>(`Context`);
-                    return [pluginId, m(cb)(c)];
+                    value m = type(cb).getMethod<Anything, Result, [Context]>(contrib.name);
+                    /* Method<Contribution, Result, [Context]> m = 
+                           contrib.memberApply<Contribution, Result, [Context]>(`Contribution`, `Context`);
+                    */
+                    if (exists m) {
+                       return [pluginId, m(cb)(c)];
+                    }
+                    
                 } 
             } catch (Exception e) {
-                watchdog (3, "Runtime", "Contribution could not be invoked: ``e.message``");
+                watchdog (3, "Runtime", "Contribution was not obtained from ``pluginId`` : ``e.message``");
             }
             return [pluginId,null];
         }
@@ -128,7 +135,7 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         shared variable Plugin? pluginInstance = null;
         
         // instantiate class and interface from info and inject the run-time
-        value instantiable = pluginInfo.pluginClass.apply(`PluginInfo & PluginRuntime`);
+        value instantiable = pluginInfo.pluginClass.apply<Plugin>();
         if (is Class<Anything, [PluginInfo & PluginRuntime]> instantiable) {
             value instance = instantiable(plugin);
             if (is Plugin instance) {
@@ -136,21 +143,51 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
             }
         }
         
-        
-        for ( a in pluginInfo.pluginClass.annotatedMemberDeclarations<FunctionDeclaration, RouteAnnotation>()) {
+        //top-level routes
+        for ( a in pluginInfo.pluginClass.containingPackage
+                .annotatedMembers<FunctionDeclaration, RouteAnnotation>()) {
             if (exists ra = a.annotations<RouteAnnotation>().first) {
-                Method<Plugin,Result,[Context]> method = a.memberApply<Plugin, Result, [Context]>(`Context`);
+                Function<Result,[Context, PluginInfo & PluginRuntime]>method = 
+                        a.apply<Result, [Context, PluginInfo & PluginRuntime]>();
+    
                 WebRoute webRoute = WebRoute(pluginInfo.id, ra.routeName, a.annotations<Methods>(), 
-                ra.routePath, method, a.annotations<Permission>().first?.permission);
-                watchdog(1, "Plugins", "Adding route: " + webRoute.string);
+                    ra.routePath, method, a.annotations<Permission>().first?.permission);
+                watchdog(1, "Plugins", "Adding top-level route: " + webRoute.string);
                 routes.add(webRoute);
             }
         }
         
+        //routes within the plugin class
+        for ( ca in pluginInfo.pluginClass
+                .annotatedMemberDeclarations<FunctionDeclaration, RouteAnnotation>()) {
+            if (exists ra = ca.annotations<RouteAnnotation>().first) {
+                value method = type(pluginInstance).getMethod<Anything, Result, [Context]>(ca.name);
+                if (exists method) {
+                    WebRoute webRoute = WebRoute(pluginInfo.id, ra.routeName, ca.annotations<Methods>(), 
+                    ra.routePath, method, ca.annotations<Permission>().first?.permission);
+                    watchdog(1, "Plugins", "Adding plugin route: " + webRoute.string);
+                    routes.add(webRoute);
+                }
+            }
+        }
+        
+        Result executeProducer(WebRoute r, Context c) {
+            if ( is Method<Anything,Result,[Context]> producer = r.produce) {
+                return producer(pluginInstance)(c); 
+            }
+            else if ( is Function<Result,[Context, PluginInfo&PluginRuntime]> producer = r.produce) { 
+                return producer(c, plugin);                    
+            } else {
+                return null;
+            }
+        }
+            
         shared Page? produceRoute(Context c, WebRoute r) {
             watchdog(8, "MainDispatcher", "Using route " + r.string);
             if (exists p = pluginInstance) {
-                Result raw = r.produce(p)(c);
+
+                Result raw = executeProducer(r, c);
+                
                 switch(raw)
                 case(is Assoc) {
                     return  RawPage({ConcreteResult({raw})});

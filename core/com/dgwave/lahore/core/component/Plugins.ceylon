@@ -1,8 +1,8 @@
 import ceylon.collection { HashMap, LinkedList, HashSet }
-import ceylon.language.model { modules }
-import ceylon.language.model.declaration { ... }
+import ceylon.language.meta { modules }
+import ceylon.language.meta.declaration { ... }
 import com.dgwave.lahore.api { ... }
-import com.dgwave.lahore.core { WebRoute, PluginInfoImpl, PluginImpl, PluginRuntimeImpl}
+import com.dgwave.lahore.core { WebRoute, PluginInfoImpl, PluginImpl, PluginRuntimeImpl, lahorePlugins}
 
 class Plugins() {
     
@@ -51,29 +51,29 @@ class Plugins() {
     }
     
     
-    doc("We need the official id, name, desc as loaded")
-    void register(String cmName, String cmVersion, ClassDeclaration pluginClass, String[] contribImpls, InterfaceDeclaration? contribInterface) {
+    "Register the official id, name, description as loaded"
+    void register(Module cm, ClassDeclaration pluginClass, String[] contribImpls, InterfaceDeclaration? contribInterface) {
         
-        String? pluginId = pluginClass.annotations<Id>().first?.id;
+        String? pluginId = cm.annotations<Id>().first?.id;
         
         if (exists pluginId) {
-            String? pluginName = pluginClass.annotations<Name>().empty
-            then  pluginId else pluginClass.annotations<Name>().first?.name ;
-            String? pluginDesc = pluginClass.annotations<Description>().empty
-            then pluginId else pluginClass.annotations<Description>().first?.description;
-            String? pluginConfigure = pluginClass.annotations<Configure>().empty
-            then pluginId else pluginClass.annotations<Configure>().first?.configureLink;			
+            String? pluginName = cm.annotations<Name>().empty
+                then  pluginId else cm.annotations<Name>().first?.name ;
+            String? pluginDesc = cm.annotations<Description>().empty
+                then pluginId else cm.annotations<Description>().first?.description;
+            String? pluginConfigure = cm.annotations<Configure>().empty
+            then pluginId else cm.annotations<Configure>().first?.configureLink;			
             
             if (pluginInfos.contains(pluginId)) {
-                watchdog(0, "Lahore", "A module with that id already registered. Plugin NOT registered: ``pluginClass``");
+                watchdog(0, "Lahore", "A module with that id already registered. Plugin NOT registered: ``cm``");
             } else {
                 watchdog(1, "Plugins", "Internal register Plugin : ``pluginId``");
                 if (exists pluginName) { // should always exit
                     if (exists pluginDesc) {
                         if (exists pluginConfigure) {
                             pluginInfos.put(pluginId, PluginInfoImpl {
-                                moduleName = cmName;
-                                moduleVersion = cmVersion;						  	
+                                moduleName = cm.name;
+                                moduleVersion = cm.version;						  	
                                 id = pluginId;
                                 name = pluginName; 
                                 description = pluginDesc; 
@@ -139,25 +139,34 @@ class Plugins() {
     }
     
     // OK, now register all the modules once
-    for (cm in modules.list) {
+    for (lp in lahorePlugins) {
         try {
-            if (!cm.name.startsWith("ceylon") && !cm.name.startsWith("oracle") 
-                    && !cm.name.startsWith("java") && !cm.name.startsWith("javax") ) {
+            value pluginName = lp.split((Character ch) => ch == '/');
+            String? cmName = pluginName.first;
+            String? cmVersion = pluginName.skipping(1).first;
+            variable Module? ceylonModule = null;
+            if (exists cmName) {
+                if (exists cmVersion) {
+                    ceylonModule = modules.find(cmName, cmVersion);
+                }
+            }
+            
+            if (exists cm = ceylonModule) {
+            if (exists pluginId = cm.annotations<Id>().first?.id ) {
                 for (Package pk in cm.members) {
-                    if (cm.name == pk.name  && cm.name != "com.dgwave.lahore.core") { //FIXME - kludge for null on Java classes
-                        //  if (exists marker = pk.getClassOrInterface("module_")) {
+                    if (cm.name == pk.name) {
                         variable ClassDeclaration? pc = null;
                         variable value impls = LinkedList<String>();
-                        for (ClassDeclaration cid in pk.annotatedMembers<ClassDeclaration, Id>()) {
-                            for (interf in cid.memberDeclarations<InterfaceDeclaration>()) {
-                                String fullName = interf.containingPackage.name + "." + interf.name;
+                        for (ClassDeclaration cid in pk.members<ClassDeclaration>()) {
+                            for (interf in cid.satisfiedTypes) {
+                                String fullName = interf.declaration.containingPackage.name + "." + interf.declaration.name;
                                 watchdog(8, "Plugins", "Evaluating interface for plugin: ``fullName``");
                                 if ("com.dgwave.lahore.api.Plugin".equals(fullName)) {
                                     watchdog(0, "Lahore", "Loading - " + cm.name + pk.name + "." + cid.name);
                                     pc = cid;
                                 }
-                                for (superInterf in interf.memberDeclarations<InterfaceDeclaration>()) {
-                                    String superFullName = superInterf.containingPackage.name + "." + superInterf.name;							
+                                for (superInterf in interf.satisfiedTypes) {
+                                    String superFullName = superInterf.declaration.containingPackage.name + "." + superInterf.declaration.name;							
                                     if ("com.dgwave.lahore.api.Contribution".equals (superFullName)) {
                                         impls.add(fullName);
                                     }
@@ -167,23 +176,23 @@ class Plugins() {
                         variable InterfaceDeclaration? hc = null;
                         if (exists pluginClass = pc) {
                             for (InterfaceDeclaration iid in pk.members<InterfaceDeclaration>()) {
-                                for (interf in iid.memberDeclarations<InterfaceDeclaration>()) {
-                                    String fullName = interf.containingPackage.name + "." + interf.name;
+                                for (interf in iid.satisfiedTypes) {
+                                    String fullName = interf.declaration.containingPackage.name + "." + interf.declaration.name;
                                     watchdog(8, "Plugins", "Evaluating interface for hook ``fullName``");
                                     if ("com.dgwave.lahore.api.Contribution".equals(fullName)) {
                                         hc = iid;
                                     }
                                 }
                             }
-                            register(cm.name, cm.version, pluginClass,impls.sequence, hc);
+                            register(cm, pluginClass, impls.sequence, hc);
                         }
-                        // }
                     }
                 }
             }
+            }
         } catch (Exception e){
             // nothing
-            watchdog(0, "Lahore", "Error registering Plugin: " + cm.name + " : " + e.message);
+            watchdog(0, "Lahore", "Error registering Plugin: ``lp`` : " + e.message);
             e.printStackTrace();
         }
     }		

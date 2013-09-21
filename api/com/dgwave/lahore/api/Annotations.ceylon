@@ -1,33 +1,39 @@
-import ceylon.language.model { OptionalAnnotation, SequencedAnnotation }
-import ceylon.language.model.declaration { FunctionDeclaration, ClassDeclaration }
+import ceylon.language.meta.declaration { ClassDeclaration, FunctionDeclaration, Module, Package }
 
 "The annotation class for [[id]]."
 shared final annotation class Id(shared String id)
-        satisfies OptionalAnnotation<Id, ClassDeclaration> {}
+        satisfies OptionalAnnotation<Id, Module> {}
 
 "Annotation to specify Lahore module short id" 
 shared annotation Id id(String id) => Id(id);
 
 "The annotation class for [[name]]."
 shared final annotation class Name(shared String name, shared String locale)
-        satisfies OptionalAnnotation<Name, ClassDeclaration> {}
+        satisfies OptionalAnnotation<Name, Module> {}
 
 "Annotation to specify Lahore module human-friendly name" 
 shared annotation Name name(String name, String locale ="en") => Name(name, locale);
 
 "The annotation class for [[description]]."
 shared final annotation class Description(shared String description, shared String locale)
-        satisfies OptionalAnnotation<Description, ClassDeclaration> {}
+        satisfies OptionalAnnotation<Description, Module> {}
 
 "Annotation to specify Lahore module description" 
 shared annotation Description description(String description, String locale ="en") => Description(description, locale);
 
 "The annotation class for [[configure]]."
 shared final annotation class Configure(shared String configureLink)
-        satisfies OptionalAnnotation<Configure, ClassDeclaration> {}
+        satisfies OptionalAnnotation<Configure, Module> {}
 
 "Annotation to specify module configuration URL" 
 shared annotation Configure configure(String configureLink) => Configure(configureLink);
+
+"The annotation class for [[test]]."
+shared final annotation class Test(shared String forPackage)
+		satisfies OptionalAnnotation<Test, Package> {}
+
+"Annotation to specify a test package" 
+shared annotation Test test(String forPackage) => Test(forPackage);
 
 "The annotation class for [[route]]."
 shared final annotation class RouteAnnotation(shared String routeName, shared String routePath)

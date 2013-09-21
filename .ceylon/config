@@ -1,11 +1,9 @@
-
 [defaults]
 encoding=UTF-8
 offline=false
 
 [repositories]
-remote=http://modules.dgwave.com/repo
-remote=http://modules.ceylon-lang.org/test
+remote=http://modules.ceylon-lang.org/
 
 [lahore]
 environment=DEV
