@@ -3,7 +3,7 @@ encoding=UTF-8
 offline=false
 
 [repositories]
-remote=http://modules.ceylon-lang.org/
+remote=http://modules.dgwave.com/test
 
 [lahore]
 environment=DEV

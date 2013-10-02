@@ -9,8 +9,7 @@ name("Menu")
 description("Allows administrators to customize the site navigation menu.")
 configure("admin/structure/menu")
 module com.dgwave.lahore.menu '0.1' {
-    import ceylon.language '0.6';
-    import ceylon.collection '0.6';
+    import ceylon.collection '0.6.1';
     shared import com.dgwave.lahore.api '0.1';
     shared import com.dgwave.lahore.help '0.1';
 }
