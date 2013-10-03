@@ -1,4 +1,4 @@
-import ceylon.language.meta.declaration { ClassDeclaration, FunctionDeclaration, Module, Package }
+import ceylon.language.meta.declaration { ClassDeclaration, FunctionDeclaration, Module }
 
 "The annotation class for [[id]]."
 shared final annotation class Id(shared String id)
@@ -27,13 +27,6 @@ shared final annotation class Configure(shared String configureLink)
 
 "Annotation to specify module configuration URL" 
 shared annotation Configure configure(String configureLink) => Configure(configureLink);
-
-"The annotation class for [[test]]."
-shared final annotation class Test(shared String forPackage)
-		satisfies OptionalAnnotation<Test, Package> {}
-
-"Annotation to specify a test package" 
-shared annotation Test test(String forPackage) => Test(forPackage);
 
 "The annotation class for [[route]]."
 shared final annotation class RouteAnnotation(shared String routeName, shared String routePath)

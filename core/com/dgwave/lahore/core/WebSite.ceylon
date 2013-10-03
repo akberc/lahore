@@ -1,14 +1,24 @@
-import com.dgwave.lahore.api { watchdog,  Config, Theme, Script, Region, Template, Style, Markup, Methods }
-import com.dgwave.lahore.core.component { plugins, Page }
-import ceylon.net.http.server { Matcher, Request, Response }
-import ceylon.net.http { get, post, Method, contentType }
-import ceylon.io.charset { utf8 }
+import com.dgwave.lahore.api { ... }
+import com.dgwave.lahore.core.component {Page}
+import ceylon.language.meta.model { Method, Function }
 import ceylon.file { Path, parseURI }
+import ceylon.net.http { HttpMethod=Method, get, post, contentType }
+import ceylon.net.http.server { Matcher, Request, Response }
+import ceylon.io.charset { utf8 }
 
+shared class WebRoute (pluginId, name, methods, String routePath, produce, 
+String? routerPermission = null)  satisfies Route {
+    shared actual String pluginId;
+    shared actual String name;
+    shared actual Methods[] methods;
+    shared actual String path = routePath;
+    shared actual Method<Anything,Result,[Context]>
+        |Function<Result,[Context, PluginInfo&PluginRuntime]> produce;
+    shared actual String string = 
+            "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
+}
 
-//shared class WebSite(site, host, port, context, staticURI) satisfies Site {
-
-shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satisfies Site {	
+shared class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {	
     shared actual String site = siteId;
     shared actual String host = siteConfig.stringWithDefault("host", "localhost");
     shared actual Integer port  { 
@@ -19,12 +29,13 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
         }
     }
     shared actual String context = siteConfig.stringWithDefault("context", "/" + siteId);
+    Path siteStaticDir = server.defaultContext.staticResourcePath("site", siteId);
     shared actual Path staticURI = parseURI(siteConfig.stringWithDefault("static", 
     siteStaticDir.uriString));
     shared actual Config config = siteConfig;
     shared actual {String*} enabledPlugins = config.stringsWithDefault("enabledPlugins", {});
-    shared actual {Method*} acceptMethods = {get, post};
-    shared actual default {WebRoute*} webRoutes = 
+    shared actual {HttpMethod*} acceptMethods = {get, post};
+    shared actual default {WebRoute*} routes = 
             context == "/admin" then 
     plugins.routesFor(enabledPlugins, true)
             .filter((WebRoute wr) => wr.path.startsWith("/admin") || wr.path.startsWith("admin")) 
@@ -40,7 +51,7 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
     shared actual Anything(Request, Response) endService =>externalService;
     void externalService (Request req, Response resp) {
         // create a new context
-        DefaultWebContext dc = DefaultWebContext(lahore.context, systemTheme, config); 
+        DefaultWebContext dc = DefaultWebContext(server.defaultContext, systemTheme, config); 
         dc.put("path",req.path);
         dc.put("method", req.method.string);
         dc.put("headers", req.headers);
@@ -96,7 +107,7 @@ shared class WebSite(String siteId, Path siteStaticDir, Config siteConfig) satis
         doc("Internal method to find an applicable route given a path")		
         WebRoute? findApplicableRoute(String method, String path, DefaultWebContext dc) {
             watchdog(6, "WebSite", "Looking for route: " + method + " " + path);
-            for (r in webRoutes) {
+            for (r in routes) {
                 watchdog(7, "WebSite", "Evaluating route : " + r.string);
                 
                 {String*} pathSegments = r.path.split((Character ch) => ch == '/');

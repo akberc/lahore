@@ -1,41 +1,9 @@
 import com.dgwave.lahore.api { ... }
-import ceylon.net.http.server { Request, Response, Matcher }
-import ceylon.net.http { HttpMethod = Method }
-import ceylon.file { Path, parsePath }
+import ceylon.file { Path, parsePath, Resource, File, defaultSystem, Directory }
 import ceylon.collection { HashMap }
-import ceylon.language.meta.model { Method, Function }
-
-doc("A full top-level Dispatcher that handles all methods")
-shared interface Site {
-    
-    shared formal String host;
-    shared formal Integer port;
-    shared formal String context;
-    
-    doc("Site name")
-    shared formal String site;
-    
-    doc("Final configuration for this site and plugin matrix")
-    shared formal Config config;
-    
-    shared formal {String*} enabledPlugins; //direclty enabled and dependent plugins
-    
-    shared formal {HttpMethod*} acceptMethods;
-    
-    shared default {String*} contentTypes => {};
-    
-    shared default {String*} accepts => {};
-    
-    doc("We still need the routes and these may define methods")
-    shared formal {WebRoute*} webRoutes;
-    
-    shared formal Path staticURI;
-    
-    shared formal Anything(Request, Response) endService;
-    
-    shared formal Matcher matcher;
-}
-
+import ceylon.net.http.server { Matcher, startsWith, isRoot }
+import ceylon.net.http { get }
+import com.dgwave.lahore.core.component { AssocConfig }
 
 class ParamMatcher(String context) extends Matcher(){
     
@@ -43,16 +11,13 @@ class ParamMatcher(String context) extends Matcher(){
     relativePath(String requestPath) => requestPath[context.size...];
 }
 
-
 class PluginStaticPath({String*} ps) extends Matcher() {
     matches(String path) => ps.any((String e) => path.startsWith("/" + e + ".plugin"));
     relativePath(String requestPath) => requestPath; // FIXME
 }
 
-
 "Rule using static paths in site-enabled plugins."
 shared Matcher pluginStaticPath({String*} ps) => PluginStaticPath(ps);
-
 
 shared class DefaultWebContext(Context fromContext,  theme, config) 
         extends HashMap<String, Object>() satisfies WebContext {
@@ -144,21 +109,54 @@ shared class DefaultWebContext(Context fromContext,  theme, config)
     }	
 }
 
+void loadOtherSites(Server server) {   
+    Resource configDir = server.defaultContext.configStorage.basePath.resource;
+    if (is Directory configDir) {	
+        for (d  in configDir.childDirectories("*.site")) {
+            if (is File f = d.childResource("site.yaml")) {
+                watchdog(5, "Lahore", "Loading site from `` f.name`` ");
+                
+            }
+        }
+    }
+}
 
-doc("A simple Web route")
-shared class WebRoute(pluginId, name, methods, String routePath, produce, String? routerPermission = null) {
+void loadAdminSite(Server adminServer) {
+    if (exists site = loadSite("admin", adminServer, true)) {
+
+
+        
+    } else {
+        watchdog(0, "Lahore", "Admin site could not be loaded - will end now!");
+    }
+}
+
+
+Site? loadSite(String siteId, Server server, Boolean create) {
+    watchdog(2, "Lahore", "Loading site `` siteId`` ");
     
-    shared String pluginId;
+    Config? siteConfig = server.defaultContext.configStorage.load(siteId + ".site/site.yaml");
     
-    shared String name;
-    
-    shared Methods[] methods;
-    
-    shared String path = routePath;
-    
-    shared Method<Anything,Result,[Context]>
-            | Function<Result,[Context, PluginInfo&PluginRuntime]> produce;
-    
-    shared actual String string = 
-            "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
+    if (exists siteConfig) {
+        return createSite(siteId, siteConfig, server);
+    } else {
+        if (create) {
+            return createSite(siteId, AssocConfig(), server); // empty config
+            // TODO write config
+        } else {
+            return null;
+        }
+    }
+}
+
+Site? createSite(String siteId, Config config, Server server) {
+    if ("web" == config.stringWithDefault("type", "web")) {
+        return WebSite(siteId, config, server);
+    }
+    else if ("rest" == config.stringWithDefault("type", "web")) {
+        return RestSite(siteId, config);
+    } else {
+        watchdog(0, "Lahore", "Only `web` and `rest` type of sites supported");
+        return null;
+    }
 }

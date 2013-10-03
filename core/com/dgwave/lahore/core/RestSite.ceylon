@@ -1,4 +1,4 @@
-import com.dgwave.lahore.api { Config }
+import com.dgwave.lahore.api { Config, Site, Route }
 import ceylon.file { Path }
 import ceylon.net.http.server { Response, Request, Matcher }
 import ceylon.net.http { Method }
@@ -22,7 +22,7 @@ class RestSite(String siteId, Config siteConfig) satisfies Site {
     
     shared actual Integer port = nothing; /* TODO auto-generated stub */
     
-    shared actual {WebRoute*} webRoutes = nothing; /* TODO auto-generated stub */
+    shared actual {Route*} routes = nothing; /* TODO auto-generated stub */
     
     shared actual String site = nothing; /* TODO auto-generated stub */
     

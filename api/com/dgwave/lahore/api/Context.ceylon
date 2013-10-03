@@ -14,17 +14,6 @@ shared object conversationScope extends Scope() { shared actual String string = 
 shared object requestScope extends Scope() { shared actual String string = "request";}	
 shared object callScope extends Scope() { shared actual String string = "call";}		
 
-shared interface Storable {
-    shared formal void load(Assoc assoc);
-    shared formal Assoc save();
-}
-
-shared interface Config satisfies Storable {
-    shared formal String? stringOnly(String key);
-    shared formal String stringWithDefault (String key, String defValue);
-    shared formal String[] stringsWithDefault (String key, String[] defValues = []);
-}
-
 " This should be injectable into plugin providers"
 shared interface Context {
     shared default String? contextParam(String name) { return null;}

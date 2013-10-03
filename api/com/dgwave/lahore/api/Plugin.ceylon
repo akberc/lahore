@@ -1,4 +1,5 @@
 import ceylon.language.meta.declaration { FunctionDeclaration }
+import ceylon.language.meta.model { Method, Function }
 doc(" Any plugin invocation, direct or hooked, should result in one of these.
      Null will not be passed through to the caller, but will get an empty result or a false.
      Assoc is a generic representation of complex objects.  The framework provides some marshallers for Assoc's.
@@ -9,11 +10,19 @@ shared alias Result => Null | Assoc | {Fragment+} | {Entity+};
 
 shared alias Contributed => [String, Result];
 
-shared alias Route => FunctionDeclaration & Result(Context);
-
-shared interface Fragment {
-    shared formal String element;
-    shared formal String render();
+doc("A simple route")
+shared interface Route {
+    
+    shared formal String pluginId;
+    
+    shared formal String name;
+    
+    shared formal Methods[] methods;
+    
+    shared formal String path;
+    
+    shared formal Method<Anything,Result,[Context]>
+            | Function<Result,[Context, PluginInfo&PluginRuntime]> produce;
 }
 
 doc("Interface to be implemented by all plugins that

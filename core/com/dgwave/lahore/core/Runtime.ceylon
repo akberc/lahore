@@ -1,7 +1,7 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.collection { HashMap, LinkedList }
 import ceylon.language.meta.declaration { ClassDeclaration, InterfaceDeclaration, FunctionDeclaration }
-import com.dgwave.lahore.core.component { plugins, Page, RawPage, TemplatedPage, ConcreteResult }
+import com.dgwave.lahore.core.component { Page, RawPage, TemplatedPage, ConcreteResult }
 import ceylon.language.meta.model { Class, Method, Function }
 import ceylon.language.meta { type }
 
@@ -221,7 +221,15 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }	
     }
     
-    shared class ContributionImpl(pluginId) satisfies Contribution {
-        shared actual String pluginId;
-        
-    }
+shared class ContributionImpl(pluginId) satisfies Contribution {
+    shared actual String pluginId;
+    
+}
+   
+shared variable Server? lahoreServer = null;
+
+shared void runWith(Server server) {
+    lahoreServer = server;
+    loadAdminSite(server);
+    loadOtherSites(server);
+}

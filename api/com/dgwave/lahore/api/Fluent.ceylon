@@ -1,5 +1,4 @@
 import ceylon.math.float { ceiling }
-import com.dgwave.lahore.core.component { lahoreLog}
 
 shared Array array (Assocable* vars) {
 
@@ -12,10 +11,6 @@ shared Assoc assoc (Entry<String, Assocable>* vars) {
 
 shared Result result (Assoc | {Fragment+} | {Entity+} routeOutput) {
     return  routeOutput;
-}
-
-shared void watchdog(Integer severity, String from, String message) {
-    lahoreLog(severity, from, message);
 }
 
 shared String t(String text, {Entry<String,String>*} pairs = {}) {

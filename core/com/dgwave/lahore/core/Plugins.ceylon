@@ -2,9 +2,10 @@ import ceylon.collection { HashMap, LinkedList, HashSet }
 import ceylon.language.meta { modules }
 import ceylon.language.meta.declaration { ... }
 import com.dgwave.lahore.api { ... }
-import com.dgwave.lahore.core { WebRoute, PluginInfoImpl, PluginImpl, PluginRuntimeImpl, lahorePlugins}
 
-class Plugins() {
+import com.dgwave.lahore.core.component { AssocConfig }
+
+class Plugins(String[] lahorePlugins) {
     
     doc("Plugin:identifier to plugin info")
     value pluginInfos = HashMap<String, PluginInfoImpl>();
@@ -262,7 +263,7 @@ class Plugins() {
 
 
 shared object plugins {
-    Plugins mh = Plugins();
+    Plugins mh = Plugins(lahoreServer?.plugins else []);
     
     shared {Assoc*} adminTasks(String pluginId) { 
         return mh.getAdminTasks(pluginId);

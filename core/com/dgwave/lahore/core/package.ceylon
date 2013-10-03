@@ -1,1 +1,1 @@
-package com.dgwave.lahore.core;
+shared package com.dgwave.lahore.core;
