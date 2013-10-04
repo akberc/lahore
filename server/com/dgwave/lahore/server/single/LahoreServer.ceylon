@@ -140,13 +140,12 @@ shared Boolean lahoreBooted => lahoreServer.booted;
 shared void createServers() {
     Server adminServer = createServer {};
     adminServer.addListener(consoleListener);
+    lahoreServer.servers.put("localhost" + ":" + "8080" + " (admin)", adminServer); //FIXME
     
     // pass control to core
     runWith(lahoreServer);
 
     if (exists site = lahoreServer.sites.first) {
-        lahoreServer.servers.put(site.item.host + ":" + site.item.port.string + " (admin)", adminServer);
-
         if (lahoreServer.environment == "DEV") {
             adminServer.start(site.item.port, site.item.host);
         } else {

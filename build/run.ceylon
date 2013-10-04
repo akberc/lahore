@@ -7,8 +7,8 @@ void run() {
     value compileAll = Goal {
         name = "compile";
         compile {
-            moduleName = "com.dgwave.lahore.api com.dgwave.lahore.core com.dgwave.lahore.system";
-            sourceDirectories = {"api", "core", "system"};
+            moduleName = "com.dgwave.lahore.api com.dgwave.lahore.core com.dgwave.lahore.server com.dgwave.lahore.system com.dgwave.lahore.help com.dgwave.lahore.menu";
+            sourceDirectories = {"api", "core", "server", "system", "help", "menu"};
         };
     };
 

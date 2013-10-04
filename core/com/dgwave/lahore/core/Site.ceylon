@@ -123,14 +123,11 @@ void loadOtherSites(Server server) {
 
 void loadAdminSite(Server adminServer) {
     if (exists site = loadSite("admin", adminServer, true)) {
-
-
-        
+        adminServer.addSite(site);
     } else {
         watchdog(0, "Lahore", "Admin site could not be loaded - will end now!");
     }
 }
-
 
 Site? loadSite(String siteId, Server server, Boolean create) {
     watchdog(2, "Lahore", "Loading site `` siteId`` ");
