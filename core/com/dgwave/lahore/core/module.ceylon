@@ -3,7 +3,6 @@ doc ("Lahore port to Ceylon.")
 license ("Apache 2.0 License - Copyright 2013 Digiwave Systems Ltd. (http://www.dgwave.com/)")
 
 module com.dgwave.lahore.core '0.1' {
-    //  nothing shared out of this module except API
 
     import ceylon.file '0.6.1';
     import ceylon.collection '0.6.1';

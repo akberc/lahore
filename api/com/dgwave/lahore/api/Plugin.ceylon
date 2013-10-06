@@ -67,6 +67,13 @@ shared interface PluginRuntime {
     
     shared formal Boolean another(String pluginId);
     shared formal PluginInfo? plugin(String pluginId);
+    
+    // moved from context
+    
+    "Plugins should always get storage references: plugin or site-level is dependent on Site"
+    shared formal Storage<Entity> entityStorage;	
+    shared formal Storage<Config> configStorage;
+
 }
 
 shared alias Runtime => PluginInfo & PluginRuntime;

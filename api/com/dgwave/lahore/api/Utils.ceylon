@@ -1,5 +1,4 @@
-import com.dgwave.lahore.api { Assoc, Array, Markup, ContainedMarkup, ContainerMarkup, Assocable }
-
+"Copied/inspired from ceylon.json to allow printing other markup formats"
 shared class StringPrinter(Boolean pretty = false) extends Printer(pretty){
 
     value builder = StringBuilder();

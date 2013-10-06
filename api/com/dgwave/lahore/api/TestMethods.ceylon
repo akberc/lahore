@@ -1,7 +1,5 @@
-import com.dgwave.lahore.core { ... }
-import com.dgwave.lahore.api { ... }
 import ceylon.test { ... }
-import com.dgwave.lahore.core.component { StringPrinter }
+
 
 doc ("Run tests for static global methods for Lahore")
 

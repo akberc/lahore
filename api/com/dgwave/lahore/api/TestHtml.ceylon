@@ -1,8 +1,13 @@
-import com.dgwave.lahore.api { ... }
 import ceylon.test { ... }
 
-doc ("Run tests for static global methods for Lahore")
+shared void runTests (){
+    suite("lahore.core",
+    "Methods" -> testMethods,
+    "Html" -> testHtml
+    );
+}
 
+doc ("Run tests for static global methods for Lahore")
 void testHtml(){
     
     value page = Html(

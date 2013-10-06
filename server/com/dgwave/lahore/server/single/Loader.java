@@ -14,9 +14,9 @@ import com.redhat.ceylon.cmr.api.ArtifactResult;
 import com.redhat.ceylon.cmr.api.RepositoryManager;
 import com.redhat.ceylon.cmr.ceylon.CeylonUtils;
 
-public class Loader {
+class Loader {
 
-    public List<String> registerExtensions() {
+    List<String> registerExtensions() {
         
     	List<String> toLoad = new ArrayList<String>();
     	

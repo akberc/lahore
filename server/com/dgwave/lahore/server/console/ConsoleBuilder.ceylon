@@ -1,5 +1,5 @@
 import com.dgwave.lahore.api { ... }
-import com.dgwave.lahore.core { plugins }
+import com.dgwave.lahore.server.single { lahorePlugins }
 
 shared class HtmlBuilder(String path) {
 
@@ -139,10 +139,10 @@ shared class HtmlBuilder(String path) {
         classes = tableClasses; 
         thead = pluginHeading; 
         rows = {
-          for (p in plugins.list ) 
-            if (exists pi = plugins.info(p)) Tr ( {
-              Td (pi.id),
-              Td (pi.name + " : " + pi.description),
+          for (p in lahorePlugins ) 
+            Tr ( {
+              Td (p.id),
+              Td (p.name + " : " + p.description),
               Td ("Sites"),
               Td (Div { classes= ["btn-group"];
                 button ("Stop", false, null, "btn", "btn-inverse"),

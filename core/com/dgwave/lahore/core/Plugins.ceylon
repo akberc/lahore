@@ -262,8 +262,8 @@ class Plugins(String[] lahorePlugins) {
 }
 
 
-shared object plugins {
-    Plugins mh = Plugins(lahoreServer?.plugins else []);
+object plugins {
+    Plugins mh = Plugins(lahoreServer?.pluginNames else []);
     
     shared {Assoc*} adminTasks(String pluginId) { 
         return mh.getAdminTasks(pluginId);

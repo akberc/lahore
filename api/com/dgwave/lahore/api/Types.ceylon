@@ -1,9 +1,8 @@
 import ceylon.collection { ... }
-import com.dgwave.lahore.core.component { StringPrinter }
 
 shared alias Assocable => String|Boolean|Integer|Float|Assoc|Array;
 
-by("Akber Choudhry")
+"inspired by ceylon.json as a general PHP-style array"
 shared class Assoc({Entry<String, Assocable>*} values = {}) 
     satisfies MutableMap<String, Assocable> {
     

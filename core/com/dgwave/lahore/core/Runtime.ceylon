@@ -5,7 +5,7 @@ import com.dgwave.lahore.core.component { Page, RawPage, TemplatedPage, Concrete
 import ceylon.language.meta.model { Class, Method, Function }
 import ceylon.language.meta { type }
 
-shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
+class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     configurationLink, pluginClass, contributionInterface, 
     contributeList =[], dependsOnList=[], dependedByList=[], 
     resourcesList=[], servicesList = []) satisfies PluginInfo {
@@ -49,11 +49,14 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     
     "Provides run-time implementations. PluginInfo can be for any plugin.
      Here the info represents the plugin itself, hence the duplication"
-    shared class PluginRuntimeImpl (info) 
+    class PluginRuntimeImpl (info) 
             satisfies PluginInfo & PluginRuntime {
         
         PluginInfoImpl info;
-        
+
+        shared actual Storage<Config> configStorage = nothing;
+        shared actual Storage<Entity> entityStorage = nothing;
+
         "Keyed by originating plugin and method name, with items being implementations. Populated externally"
         HashMap<String, Contribution> contributions = HashMap<String, Contribution> ();
         
@@ -118,11 +121,10 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         shared actual PluginInfo? plugin(String pluginId) {
             return plugins.info(pluginId);
         }
-        
     }
     
     doc("The runtime representation of a plugin")
-    shared class PluginImpl (scope, pluginInfo, config) satisfies Plugin {
+    class PluginImpl (scope, pluginInfo, config) satisfies Plugin {
         
         shared Scope scope;
         shared PluginInfoImpl pluginInfo;
@@ -221,12 +223,12 @@ shared class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }	
     }
     
-shared class ContributionImpl(pluginId) satisfies Contribution {
+class ContributionImpl(pluginId) satisfies Contribution {
     shared actual String pluginId;
     
 }
    
-shared variable Server? lahoreServer = null;
+variable Server? lahoreServer = null;
 
 shared void runWith(Server server) {
     lahoreServer = server;

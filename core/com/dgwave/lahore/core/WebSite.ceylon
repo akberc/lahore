@@ -6,7 +6,7 @@ import ceylon.net.http { HttpMethod=Method, get, post, contentType }
 import ceylon.net.http.server { Matcher, Request, Response }
 import ceylon.io.charset { utf8 }
 
-shared class WebRoute (pluginId, name, methods, String routePath, produce, 
+class WebRoute (pluginId, name, methods, String routePath, produce, 
 String? routerPermission = null)  satisfies Route {
     shared actual String pluginId;
     shared actual String name;
@@ -18,7 +18,7 @@ String? routerPermission = null)  satisfies Route {
             "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
 }
 
-shared class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {	
+class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {	
     shared actual String site = siteId;
     shared actual String host = siteConfig.stringWithDefault("host", "localhost");
     shared actual Integer port  { 
@@ -158,10 +158,16 @@ shared class WebSite(String siteId, Config siteConfig, Server server) satisfies 
         }
     }
     
-    shared object systemTheme satisfies Theme {
-        shared actual String id = "system";
-        shared actual {Region*} regions = {};
-        shared actual {Script*} scripts = {};
-        shared actual {Style*} styles = {};
-        shared actual {Template<Markup>*} templates = {};
-    }
+object systemTheme satisfies Theme {
+    shared actual String id = "system";
+    shared actual {Region*} regions = {};
+    shared actual {Script*} scripts = {};
+    shared actual {Style*} styles = {};
+    shared actual {Template<Markup>*} templates = {};
+}
+
+class ParamMatcher(String context) extends Matcher(){
+    
+    matches(String path) => path.startsWith(context);
+    relativePath(String requestPath) => requestPath[context.size...];
+}

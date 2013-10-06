@@ -22,10 +22,6 @@ shared interface Context {
     shared formal Path staticResourcePath(String type, String name);	
     shared default Entity? entity { return null;} // incoming form or JSON/XML object
 
-    "Plugins should always get storage references: plugin or site-level is dependent on Site"
-    shared formal Storage<Entity> entityStorage;	
-    shared formal Storage<Config> configStorage;
-
     "Passing parameters between plugins"
     shared formal Assocable passed(String string);
     shared formal Context passing(String string, Assocable arg);

@@ -1,29 +1,11 @@
 import com.dgwave.lahore.api { ... }
-import ceylon.file { Path, parsePath, Resource, File, defaultSystem, Directory }
+import ceylon.file { Path, parsePath }
 import ceylon.collection { HashMap }
-import ceylon.net.http.server { Matcher, startsWith, isRoot }
-import ceylon.net.http { get }
 import com.dgwave.lahore.core.component { AssocConfig }
 
-class ParamMatcher(String context) extends Matcher(){
-    
-    matches(String path) => path.startsWith(context);
-    relativePath(String requestPath) => requestPath[context.size...];
-}
-
-class PluginStaticPath({String*} ps) extends Matcher() {
-    matches(String path) => ps.any((String e) => path.startsWith("/" + e + ".plugin"));
-    relativePath(String requestPath) => requestPath; // FIXME
-}
-
-"Rule using static paths in site-enabled plugins."
-shared Matcher pluginStaticPath({String*} ps) => PluginStaticPath(ps);
-
-shared class DefaultWebContext(Context fromContext,  theme, config) 
+class DefaultWebContext(Context fromContext,  theme, config) 
         extends HashMap<String, Object>() satisfies WebContext {
     
-    shared actual Storage<Config> configStorage = fromContext.configStorage;
-    shared actual Storage<Entity> entityStorage = fromContext.entityStorage;
     shared actual Theme theme;
     shared Config config;	
     
@@ -109,7 +91,8 @@ shared class DefaultWebContext(Context fromContext,  theme, config)
     }	
 }
 
-void loadOtherSites(Server server) {   
+void loadOtherSites(Server server) {
+    /* FIXME get from system plugin   
     Resource configDir = server.defaultContext.configStorage.basePath.resource;
     if (is Directory configDir) {	
         for (d  in configDir.childDirectories("*.site")) {
@@ -119,6 +102,7 @@ void loadOtherSites(Server server) {
             }
         }
     }
+     */
 }
 
 void loadAdminSite(Server adminServer) {
@@ -131,9 +115,10 @@ void loadAdminSite(Server adminServer) {
 
 Site? loadSite(String siteId, Server server, Boolean create) {
     watchdog(2, "Lahore", "Loading site `` siteId`` ");
-    
+    /* FIXME get from system plugin    
     Config? siteConfig = server.defaultContext.configStorage.load(siteId + ".site/site.yaml");
-    
+    */
+    Config? siteConfig = null;
     if (exists siteConfig) {
         return createSite(siteId, siteConfig, server);
     } else {

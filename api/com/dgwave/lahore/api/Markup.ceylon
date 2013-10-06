@@ -1,7 +1,5 @@
-import com.dgwave.lahore.core.component { StringPrinter }
-
-doc("This is not a comprehensive HTML parser.  
-     It just establishes bare minimum good practices for program-generated HTML")
+"This is not a comprehensive HTML reference or producer.  
+  It just establishes bare minimum good practices for program-generated HTML"
 shared abstract class Markup(id = null, classes = [], attrs = {}) satisfies Fragment {
 
     shared default {Entry<String, String>*} attrs;

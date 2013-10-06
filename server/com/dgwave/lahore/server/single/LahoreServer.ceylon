@@ -1,17 +1,16 @@
 import ceylon.net.http.server.endpoints { serveStaticFile }
-import ceylon.net.http.server { Server, createServer, AsynchronousEndpoint, startsWith, Endpoint, isRoot, Request, Response}
+import ceylon.net.http.server { Server, createServer, AsynchronousEndpoint, startsWith, Endpoint, isRoot, Request, Response, Matcher}
 import com.dgwave.lahore.server.console { console, consoleListener }
 import ceylon.file { Path, parsePath, File, Directory, current, parseURI, defaultSystem }
 import ceylon.io { newOpenFile }
 import ceylon.io.buffer { ByteBuffer, newByteBuffer }
 import ceylon.net.http { contentType, contentLength, get }
 import ceylon.io.charset { utf8 }
-import com.dgwave.lahore.api { watchdog, Context, Storage, Entity, Config, Assocable, Site, LahoreServer = Server, Logger }
+import com.dgwave.lahore.api { watchdog, Context, Config, Assocable, Site, LahoreServer = Server, Logger, Runtime }
 import ceylon.collection { HashMap, LinkedList }
 import java.util { JavaList = List, JavaIterator = Iterator }
 import java.lang { JavaString = String }
-import com.dgwave.lahore.core.component { SqlStorage, fileStorage }
-import com.dgwave.lahore.core { pluginStaticPath, runWith }
+import com.dgwave.lahore.core { runWith }
 
 
 shared variable Integer lahoreDebugLevel =9;
@@ -22,7 +21,9 @@ object lahoreServer satisfies LahoreServer {
     shared actual variable Boolean booted = false;
     
     LinkedList<String> pluginList = LinkedList<String>();
-    shared actual String[] plugins = pluginList.sequence; //FIXME
+    shared actual String[] pluginNames = pluginList.sequence; //FIXME
+    shared LinkedList<Runtime> pluginRuntimes = LinkedList<Runtime>();
+    shared actual void addPluginRuntime(Runtime pluginRuntime) =>pluginRuntimes.add(pluginRuntime);
 
     Config bootConfig = SystemConfig();
     
@@ -51,17 +52,15 @@ object lahoreServer satisfies LahoreServer {
         configURI = configURI.replace("{lahore.home}", home.uriString); // replace placeholder
         // FIXME
         configURI = "lahore/config";
-        shared actual Storage<Config> configStorage = fileStorage(parsePath(configURI));
-        
+
         // TODO based on actual URI scheme
         
         variable String dataURI = bootConfig.stringWithDefault("lahore.dataStore", 
         home.absolutePath.childPath("data").uriString); // default value
         dataURI = dataURI.replace("{lahore.home}", home.uriString); // replace placeholder
+
         // FIXME
         dataURI = "lahore/data";
-        shared actual Storage<Entity> entityStorage = SqlStorage(parsePath(dataURI));
-        
         shared actual Path staticResourcePath(String type, String name) { return home.childPath("static").childPath(name + "." + type);}
         
         shared actual Context passing(String string, Assocable arg)  {return this;}
@@ -133,11 +132,11 @@ object lahoreServer satisfies LahoreServer {
 
 shared Map<String, Server> lahoreServers => lahoreServer.servers;
 shared Map<String, Site> lahoreSites => lahoreServer.sites;
-shared List<String> lahorePlugins => lahoreServer.plugins;
+shared List<Runtime> lahorePlugins => lahoreServer.pluginRuntimes;
 
 shared Boolean lahoreBooted => lahoreServer.booted;
 
-shared void createServers() {
+void createServers() {
     Server adminServer = createServer {};
     adminServer.addListener(consoleListener);
     lahoreServer.servers.put("localhost" + ":" + "8080" + " (admin)", adminServer); //FIXME
@@ -181,3 +180,10 @@ void webPage(String pathToFile)(Request request, Response response) {
     } 
 }
 
+class PluginStaticPath({String*} ps) extends Matcher() {
+    matches(String path) => ps.any((String e) => path.startsWith("/" + e + ".plugin"));
+    relativePath(String requestPath) => requestPath; // FIXME
+}
+
+"Rule using static paths in site-enabled plugins."
+Matcher pluginStaticPath({String*} ps) => PluginStaticPath(ps);

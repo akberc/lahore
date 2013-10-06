@@ -60,7 +60,8 @@ shared interface Server {
     shared formal Path home;
     shared formal Boolean booted;
     shared formal Context defaultContext;
-    shared formal String[] plugins;
+    shared formal String[] pluginNames;
+    shared formal void addPluginRuntime (Runtime pluginRuntime);
     shared formal void addSite (Site site);
     shared formal void removeSite (Site site);
 }
