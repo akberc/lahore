@@ -33,7 +33,7 @@ class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {
     shared actual Path staticURI = parseURI(siteConfig.stringWithDefault("static", 
     siteStaticDir.uriString));
     shared actual Config config = siteConfig;
-    shared actual {String*} enabledPlugins = config.stringsWithDefault("enabledPlugins", {});
+    shared actual {String*} enabledPlugins = config.stringsWithDefault("enabledPlugins", ["system", "help", "menu"]);
     shared actual {HttpMethod*} acceptMethods = {get, post};
     shared actual default {WebRoute*} routes = 
             context == "/admin" then 

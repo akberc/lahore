@@ -8,7 +8,7 @@ shared class AssocConfig(assoc = Assoc()) extends AbstractConfig() {
         if (exists a = assoc.getArray(key)) {
             return filterStrings(a);
         } else {
-            return [];
+            return defValues;
         }
     }
     

@@ -1,5 +1,5 @@
 import com.dgwave.lahore.api { Storage, Entity, Primitive }
-import ceylon.file { Path }
+import ceylon.file { Path}
 
 shared class SqlStorage(Path sqlPath) satisfies Storage<Entity> {
 
@@ -16,4 +16,12 @@ shared class SqlStorage(Path sqlPath) satisfies Storage<Entity> {
     shared actual Boolean save(String relativePath, Entity elem) {return false;}
 
     shared actual Path basePath = sqlPath;
+}
+
+
+doc("This is a convenience method. Responsibility of the client to keep or discard the storage")
+throws(`class Exception`)
+shared SqlStorage sqlStorage(Path path) {
+    
+    return SqlStorage(path);
 }

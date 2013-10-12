@@ -21,7 +21,7 @@ object lahoreServer satisfies LahoreServer {
     shared actual variable Boolean booted = false;
     
     LinkedList<String> pluginList = LinkedList<String>();
-    shared actual String[] pluginNames = pluginList.sequence; //FIXME
+    shared actual String[] pluginNames => pluginList.sequence; //FIXME
     shared LinkedList<Runtime> pluginRuntimes = LinkedList<Runtime>();
     shared actual void addPluginRuntime(Runtime pluginRuntime) =>pluginRuntimes.add(pluginRuntime);
 
@@ -44,23 +44,25 @@ object lahoreServer satisfies LahoreServer {
     if (exists p = parseInteger(bootConfig.stringWithDefault("lahore.debugLevel", "9"))) {
         lahoreDebugLevel = p;
     }
+
+
+    variable String configURI = bootConfig.stringWithDefault("lahore.configStore", 
+    home.absolutePath.childPath("config").uriString); // default value
+    configURI = configURI.replace("{lahore.home}", home.uriString); // replace placeholder
+    // FIXME
+    configURI = "lahore/config";
+    shared actual Path config = parsePath(configURI);
+    // TODO based on actual URI scheme
+    
+    variable String dataURI = bootConfig.stringWithDefault("lahore.dataStore", 
+    home.absolutePath.childPath("data").uriString); // default value
+    dataURI = dataURI.replace("{lahore.home}", home.uriString); // replace placeholder
+    
+    // FIXME
+    dataURI = "lahore/data";
+    shared actual Path data = parsePath(dataURI);
     
     shared actual object defaultContext satisfies Context {
-        
-        variable String configURI = bootConfig.stringWithDefault("lahore.configStore", 
-        home.absolutePath.childPath("config").uriString); // default value
-        configURI = configURI.replace("{lahore.home}", home.uriString); // replace placeholder
-        // FIXME
-        configURI = "lahore/config";
-
-        // TODO based on actual URI scheme
-        
-        variable String dataURI = bootConfig.stringWithDefault("lahore.dataStore", 
-        home.absolutePath.childPath("data").uriString); // default value
-        dataURI = dataURI.replace("{lahore.home}", home.uriString); // replace placeholder
-
-        // FIXME
-        dataURI = "lahore/data";
         shared actual Path staticResourcePath(String type, String name) { return home.childPath("static").childPath(name + "." + type);}
         
         shared actual Context passing(String string, Assocable arg)  {return this;}

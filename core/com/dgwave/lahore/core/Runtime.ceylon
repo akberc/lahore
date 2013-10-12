@@ -1,9 +1,10 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.collection { HashMap, LinkedList }
 import ceylon.language.meta.declaration { ClassDeclaration, InterfaceDeclaration, FunctionDeclaration }
-import com.dgwave.lahore.core.component { Page, RawPage, TemplatedPage, ConcreteResult }
+import com.dgwave.lahore.core.component { Page, RawPage, TemplatedPage, ConcreteResult, fileStorage, sqlStorage }
 import ceylon.language.meta.model { Class, Method, Function }
 import ceylon.language.meta { type }
+import ceylon.file { parsePath }
 
 class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     configurationLink, pluginClass, contributionInterface, 
@@ -54,8 +55,8 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         
         PluginInfoImpl info;
 
-        shared actual Storage<Config> configStorage = nothing;
-        shared actual Storage<Entity> entityStorage = nothing;
+        shared actual Storage<Config> configStorage = fileStorage((lahoreServer?.config else parsePath("./lahore/config")).childPath(info.id + ".info"));
+        shared actual Storage<Entity> entityStorage = sqlStorage(lahoreServer?.data else parsePath("./lahore/data"));
 
         "Keyed by originating plugin and method name, with items being implementations. Populated externally"
         HashMap<String, Contribution> contributions = HashMap<String, Contribution> ();

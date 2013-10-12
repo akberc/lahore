@@ -53,11 +53,14 @@ shared void watchdog(Integer severity, String from, String message) {
     defaultLogger.log(severity, from, message);
 }
 
+"A server container that presents system services to Core"
 shared interface Server {
     shared formal Logger logger(String component);
     shared formal String name;
     shared formal String version;
     shared formal Path home;
+    shared formal Path config;
+    shared formal Path data;
     shared formal Boolean booted;
     shared formal Context defaultContext;
     shared formal String[] pluginNames;

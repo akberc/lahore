@@ -1,7 +1,7 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.file { Path, parsePath }
 import ceylon.collection { HashMap }
-import com.dgwave.lahore.core.component { AssocConfig }
+import com.dgwave.lahore.core.component { AssocConfig, fileStorage }
 
 class DefaultWebContext(Context fromContext,  theme, config) 
         extends HashMap<String, Object>() satisfies WebContext {
@@ -115,10 +115,9 @@ void loadAdminSite(Server adminServer) {
 
 Site? loadSite(String siteId, Server server, Boolean create) {
     watchdog(2, "Lahore", "Loading site `` siteId`` ");
-    /* FIXME get from system plugin    
-    Config? siteConfig = server.defaultContext.configStorage.load(siteId + ".site/site.yaml");
-    */
-    Config? siteConfig = null;
+    value configStorage = fileStorage(server.config.childPath(siteId + ".site"));
+    Config? siteConfig = configStorage.load("site.yaml");
+
     if (exists siteConfig) {
         return createSite(siteId, siteConfig, server);
     } else {
