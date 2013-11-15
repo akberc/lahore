@@ -194,8 +194,8 @@ shared class Array({Assocable*} values = {})
         list.insert(index, val);
     }
 
-    shared actual void remove(Integer index) {
-        list.remove(index);
+    shared actual Assocable? remove(Integer index) {
+        return list.remove(index);
     }
 
     shared actual void removeElement(Assocable val) {

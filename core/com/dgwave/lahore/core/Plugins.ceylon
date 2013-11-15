@@ -246,12 +246,12 @@ class Plugins(String[] lahorePlugins) {
     shared {WebRoute*} routesFor({String*} sitePlugins, Boolean all) { 
         
         {String*} lookFor = all then pluginFinals.keys else 
-        pluginFinals.keys.filter((String k) => sitePlugins.contains(k));
+            pluginFinals.keys.filter((String k) => sitePlugins.contains(k));
         
         return { 
             for (lf in lookFor) 
-            if (exists pf = pluginFinals.get(lf)) 
-            for (r in pf.routes.sequence) r
+                if (exists pf = pluginFinals.get(lf)) 
+                    for (r in pf.routes.sequence) r
         };
     }
     

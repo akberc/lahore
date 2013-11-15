@@ -161,7 +161,7 @@ shared class HtmlBuilder(String path) {
         classes = tableClasses;
         thead = messageHeading;
         rows = {
-          for (line in consoleListener.history.reversed)  Tr ( {
+          for (line in consoleHistory.reversed)  Tr ( {
             Td ("admin"),
             Td (line),
             Td ("")

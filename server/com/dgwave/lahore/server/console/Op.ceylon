@@ -10,7 +10,7 @@ class DefaultTask(message, id, done = false) satisfies Task {
 }
 
 String generateId() {
-    return process.nanoseconds.string;
+    return system.nanoseconds.string;
 }
 
 shared Task createTask(String message) {

@@ -6,7 +6,7 @@ import com.dgwave.lahore.core.component { AssocConfig, fileStorage }
 class DefaultWebContext(Context fromContext,  theme, config) 
         extends HashMap<String, Object>() satisfies WebContext {
     
-    shared actual Theme theme;
+    shared actual Theme<Layout, Renderer, Binder> theme;
     shared Config config;	
     
     shared actual Entity? entity {

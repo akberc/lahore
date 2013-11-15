@@ -1,8 +1,8 @@
 import ceylon.net.http.server.endpoints { serveStaticFile }
-import ceylon.net.http.server { Server, createServer, AsynchronousEndpoint, startsWith, Endpoint, isRoot, Request, Response, Matcher}
-import com.dgwave.lahore.server.console { console, consoleListener }
+import ceylon.net.http.server { Server, newServer, AsynchronousEndpoint, startsWith, Endpoint, isRoot, Request, Response, Matcher}
+import com.dgwave.lahore.server.console { console, onStatusChange }
 import ceylon.file { Path, parsePath, File, Directory, current, parseURI, defaultSystem }
-import ceylon.io { newOpenFile }
+import ceylon.io { newOpenFile, SocketAddress }
 import ceylon.io.buffer { ByteBuffer, newByteBuffer }
 import ceylon.net.http { contentType, contentLength, get }
 import ceylon.io.charset { utf8 }
@@ -139,18 +139,19 @@ shared List<Runtime> lahorePlugins => lahoreServer.pluginRuntimes;
 shared Boolean lahoreBooted => lahoreServer.booted;
 
 void createServers() {
-    Server adminServer = createServer {};
-    adminServer.addListener(consoleListener);
+    Server adminServer = newServer {};
+    adminServer.addListener(onStatusChange);
     lahoreServer.servers.put("localhost" + ":" + "8080" + " (admin)", adminServer); //FIXME
     
     // pass control to core
     runWith(lahoreServer);
 
     if (exists site = lahoreServer.sites.first) {
+        value addr = SocketAddress(site.item.host, site.item.port);
         if (lahoreServer.environment == "DEV") {
-            adminServer.start(site.item.port, site.item.host);
+            adminServer.start(addr);
         } else {
-            adminServer.startInBackground(site.item.port, site.item.host); // throw in background
+            adminServer.startInBackground(addr); // throw in background
         }
     }   
 }

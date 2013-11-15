@@ -101,11 +101,7 @@ shared interface Controller {
     shared formal Runtime plugin;
 }
 
-shared interface Resource satisfies Annotated {
-    shared formal String id;
-}
-
-shared interface Service satisfies Annotated {
+shared interface Service {
     shared formal String id;
 }
 

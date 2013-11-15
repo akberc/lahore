@@ -160,7 +160,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
             }
         }
         
-        //routes within the plugin class
+        /* routes within the plugin class
         for ( ca in pluginInfo.pluginClass
                 .annotatedMemberDeclarations<FunctionDeclaration, RouteAnnotation>()) {
             if (exists ra = ca.annotations<RouteAnnotation>().first) {
@@ -173,6 +173,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
                 }
             }
         }
+         */
         
         Result executeProducer(WebRoute r, Context c) {
             if ( is Method<Anything,Result,[Context]> producer = r.produce) {

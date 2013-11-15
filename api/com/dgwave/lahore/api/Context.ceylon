@@ -43,14 +43,20 @@ shared interface Entity satisfies Storable {
 
 " Web Context"
 shared interface WebContext satisfies Context {
-    shared formal Theme theme;
+    shared formal Theme<Layout, Renderer, Binder> theme;
 }
 
-shared interface Theme satisfies Resource {
+shared interface Theme<LS, RS, BS> 
+        given LS satisfies Layout
+        given RS satisfies Renderer
+        given BS satisfies Binder {
+    shared formal String id;
+    shared formal LS layout;
+    shared formal RS renderer;
+    shared formal BS binder;
+    
     shared formal {Template<Markup>*} templates;
     shared formal {Style*} styles;
     shared formal {Script*} scripts;
     shared formal {Region*} regions;
 }
-
-shared interface Region{}

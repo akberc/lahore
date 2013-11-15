@@ -1,4 +1,4 @@
-import ceylon.net.http.server { Response, Request, Session, StatusListener, Status}
+import ceylon.net.http.server { Response, Request, Session, Status}
 import ceylon.net.http { contentType }
 import ceylon.io.charset { utf8 }
 import ceylon.collection { LinkedList }
@@ -44,15 +44,17 @@ shared void console(Request request, Response response) {
     response.writeString(htmlPage.html().render());
 }
 
-shared object consoleListener satisfies StatusListener {
-    shared LinkedList<String> history = LinkedList<String>();
-    shared actual void onStatusChange(Status status) {
-        addMessage(status.string);
-    }
-    shared void addMessage(String msg) {
-        if (history.size > 100) {
-            history.clear(); //TODO fix tp some configured length
-        }
-        history.add(msg);
-    }
+LinkedList<String> consoleHistory = LinkedList<String>();
+
+
+shared void onStatusChange(Status status) {
+    addConsoleMessage(status.string);
 }
+
+shared void addConsoleMessage(String msg) {
+        if (consoleHistory.size > 100) {
+            consoleHistory.clear(); //TODO fix tp some configured length
+        }
+        consoleHistory.add(msg);
+    }
+
