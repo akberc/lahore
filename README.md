@@ -21,5 +21,5 @@ Multi-site and Plugin-enabled Web Framework
 * Run with `ceylon run com.dgwave.lahore.server.single`
 * For more information, see [Wiki pages](https://github.com/dgwave/lahore/wiki).
 
-Last tested with Java 1.7 and 1.8, Ceylon 0.6.1 (1.0-beta) -- on Windows and Linux
+Last tested with Java 1.7, Ceylon 1.0.0 -- on Windows and Linux
 
