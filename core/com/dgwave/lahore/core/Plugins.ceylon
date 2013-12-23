@@ -16,20 +16,6 @@ class Plugins(String[] lahorePlugins) {
     doc("Plugin:identifier to contribution map")
     HashMap<String, String[]> pluginContributions = HashMap<String, String[]>();
     
-    deprecated("FIX this and use it in register")
-    String|Boolean satisfiesInterface(String name, OpenInterfaceType[] ifcs, String caller) {
-        variable String|Boolean ret = false;
-        for (i in ifcs) {
-            value fullName = i.declaration.containingPackage.name + "." + i.declaration.name;
-            if (name == fullName) {
-                return caller;
-            } else {
-                // TODO fix : ret = satisfiesInterface(name, i.memberDeclarations<Kind>m, fullName);
-            }
-        }
-        return ret;
-    }
-    
     doc("Exchange contribution implementations")
     void registerContributions() {
         for (impl in pluginFinals) {

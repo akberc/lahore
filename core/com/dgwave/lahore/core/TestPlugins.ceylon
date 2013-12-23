@@ -2,14 +2,8 @@ import ceylon.test { ... }
 import com.dgwave.lahore.api { ... }
 import com.dgwave.lahore.core.component { AssocConfig }
 
-void runTests (){
-    suite("lahore.core",
-        "Plugins" -> testPlugins
-    );
-}
-
 doc ("Run tests for plugins")
-void testPlugins() {
+test void testPlugins() {
     
     value contrib = `TestContribution.testInsert`.declaration;
     String contribName = contrib.containingPackage.name +

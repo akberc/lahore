@@ -46,7 +46,7 @@ shared class FileStorage( configDir) satisfies Storage<Config> {
 
     shared String readFileAsString(File file) {  
         value sb = StringBuilder();
-        value reader = file.reader();
+        value reader = file.Reader();
         try {
             while(exists line = reader.readLine()) {
                 sb.append(line);

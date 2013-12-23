@@ -92,13 +92,8 @@ object lahoreServer satisfies LahoreServer {
 
     shared actual void addSite(Site site) {
         if (exists adminServer = servers.first?.item) {
-            adminServer.addEndpoint(Endpoint {
-                path = startsWith(site.context);
-                service => site.endService;
-            });
-            sites.put(site.host + ":" + site.port.string + "/" + "admin", site);
 
-            //home page - move to main site
+            //home page - TODO move to main site
             adminServer.addEndpoint(Endpoint {
                 path = isRoot();
                 service => webPage(site.staticURI.string + "/index.html");
@@ -122,6 +117,12 @@ object lahoreServer satisfies LahoreServer {
                 path = startsWith(site.context + "/console");
                 service => console;
             });
+
+            adminServer.addEndpoint(Endpoint {
+                path = startsWith(site.context);
+                service => site.endService;
+            });
+            sites.put(site.host + ":" + site.port.string + "/" + "admin", site);
         }
     }
     
