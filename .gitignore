@@ -1,7 +1,4 @@
 /modules
 /classes
 /.openshift
-/.classpath
-/.settings
-/.project
 /system/rebel.xml

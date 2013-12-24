@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="system"/>
+	<classpathentry kind="src" path="help"/>
+	<classpathentry kind="src" path="server"/>
+	<classpathentry kind="src" path="core"/>
+	<classpathentry kind="src" path="menu"/>
+	<classpathentry kind="src" path="api"/>
+	<classpathentry kind="con" path="com.redhat.ceylon.eclipse.ui.cpcontainer.RUNTIME_CONTAINER/default"/>
+	<classpathentry kind="con" path="com.redhat.ceylon.eclipse.ui.cpcontainer.CEYLON_CONTAINER/default"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="classes"/>
+</classpath>
