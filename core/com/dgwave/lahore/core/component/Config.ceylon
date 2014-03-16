@@ -1,5 +1,8 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.json { parse, JsonObject = Object }
+import ceylon.logging { logger, Logger }
+
+Logger log = logger(`package com.dgwave.lahore.core.component`);
 
 shared class AssocConfig(assoc = Assoc()) extends AbstractConfig() {
     variable Assoc assoc;

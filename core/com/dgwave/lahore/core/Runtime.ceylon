@@ -1,10 +1,10 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.collection { HashMap, LinkedList }
 import ceylon.language.meta.declaration { ClassDeclaration, InterfaceDeclaration, FunctionDeclaration }
-import com.dgwave.lahore.core.component { Page, RawPage, TemplatedPage, ConcreteResult, fileStorage, sqlStorage }
+import com.dgwave.lahore.core.component { fileStorage, sqlStorage }
 import ceylon.language.meta.model { Class, Method, Function }
-import ceylon.language.meta { type }
 import ceylon.file { parsePath }
+import ceylon.logging { Logger, logger }
 
 class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     configurationLink, pluginClass, contributionInterface, 
@@ -50,12 +50,11 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     
     "Provides run-time implementations. PluginInfo can be for any plugin.
      Here the info represents the plugin itself, hence the duplication"
-    class PluginRuntimeImpl (info) 
-            satisfies PluginInfo & PluginRuntime {
+    class PluginRuntimeImpl (info) satisfies PluginInfo & PluginRuntime {
         
         PluginInfoImpl info;
 
-        shared actual Storage<Config> configStorage = fileStorage((lahoreServer?.config else parsePath("./lahore/config")).childPath(info.id + ".info"));
+        shared actual Storage<Config> configStorage = fileStorage((lahoreServer?.config else parsePath("./lahore/config")).childPath(info.id + ".plugin"));
         shared actual Storage<Entity> entityStorage = sqlStorage(lahoreServer?.data else parsePath("./lahore/data"));
 
         "Keyed by originating plugin and method name, with items being implementations. Populated externally"
@@ -84,21 +83,17 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
             return { for (id in contributions.keys) contributionFrom(id, contrib,c)};
         }
         
-        shared actual Contributed contributionFrom(String pluginId, 
-                FunctionDeclaration contrib, Context c) {
+        shared actual Contributed contributionFrom(String pluginId, FunctionDeclaration contrib, Context c) {
             try {
                 if (exists cb = contributions.get(pluginId)) {
-                    value m = type(cb).getMethod<Anything, Result, [Context]>(contrib.name);
-                    /* Method<Contribution, Result, [Context]> m = 
-                           contrib.memberApply<Contribution, Result, [Context]>(`Contribution`, `Context`);
-                    */
-                    if (exists m) {
-                       return [pluginId, m(cb)(c)];
+
+                    value p = contrib.memberInvoke(cb, [], c);
+                    if (is Result p) {
+                        return [pluginId, p];
                     }
-                    
                 } 
             } catch (Exception e) {
-                watchdog (3, "Runtime", "Contribution was not obtained from ``pluginId`` : ``e.message``");
+                log.warn ("Contribution was not obtained from ``pluginId`` ", e);
             }
             return [pluginId,null];
         }
@@ -155,7 +150,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     
                 WebRoute webRoute = WebRoute(pluginInfo.id, ra.routeName, a.annotations<Methods>(), 
                     ra.routePath, method, a.annotations<Permission>().first?.permission);
-                watchdog(1, "Plugins", "Adding top-level route: " + webRoute.string);
+                log.debug("Adding top-level route: " + webRoute.string);
                 routes.add(webRoute);
             }
         }
@@ -175,7 +170,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }
          */
         
-        Result executeProducer(WebRoute r, Context c) {
+        shared Result produceRoute(Context c, WebRoute r) {
             if ( is Method<Anything,Result,[Context]> producer = r.produce) {
                 return producer(pluginInstance)(c); 
             }
@@ -185,26 +180,6 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
                 return null;
             }
         }
-            
-        shared Page? produceRoute(Context c, WebRoute r) {
-            watchdog(8, "MainDispatcher", "Using route " + r.string);
-            if (exists p = pluginInstance) {
-
-                Result raw = executeProducer(r, c);
-                
-                switch(raw)
-                case(is Assoc) {
-                    return  RawPage({ConcreteResult({raw})});
-                } 
-                else {
-                    // We do not want template internal details here - we leave
-                    // the regions and other top-level names to internal implementation of
-                    // Page, templates and themes
-                    return TemplatedPage({raw}, "system"); //TODO lookup from site registry
-                }
-            }
-            return null;
-        }	
         
         shared actual void start() {
             if (exists p = pluginInstance) {
@@ -231,6 +206,8 @@ class ContributionImpl(pluginId) satisfies Contribution {
 }
    
 variable Server? lahoreServer = null;
+
+Logger log = logger(`module com.dgwave.lahore.core`);
 
 shared void runWith(Server server) {
     lahoreServer = server;

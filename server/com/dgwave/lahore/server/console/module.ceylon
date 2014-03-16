@@ -1,6 +1,6 @@
 module com.dgwave.lahore.server.console "0.1" {
 
-    import ceylon.net "1.0.1";
+    shared import ceylon.net "1.0.1";
     import ceylon.io "1.0.0";
     import ceylon.collection "1.0.0";
     

@@ -4,7 +4,7 @@ import java.lang { ObjectArray, JavaString = String }
 
 shared class SystemConfig() extends AbstractConfig() {
     
-    CeylonConfig config = CeylonConfig();
+    CeylonConfig config = CeylonConfig().get();
     
     shared actual String[] stringsWithDefault(String key, String[] defValues) {
         ObjectArray<JavaString>? vs = config.getOptionValues(key);

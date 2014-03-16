@@ -1,7 +1,10 @@
-import ceylon.file { Path }
+import ceylon.file {
+    Path
+}
 
 //TODO see how we can inject the context (and config) with  the right scope
 shared alias Primitive => String | Integer | Float | Boolean;
+shared alias TaggedMarkup => [Map<String, String>, List<String>];
 
 shared abstract class Scope() of 
     globalScope | pluginScope | siteScope | sessionScope | conversationScope | requestScope | callScope {}
@@ -19,7 +22,7 @@ shared interface Context {
     shared default String? contextParam(String name) { return null;}
     shared default String? queryParam(String name) { return null;}	
     shared default String? pathParam(String placeHolder) { return null;}	
-    shared formal Path staticResourcePath(String type, String name);	
+    shared formal String staticResourcePath(String type, String name);	
     shared default Entity? entity { return null;} // incoming form or JSON/XML object
 
     "Passing parameters between plugins"
@@ -43,20 +46,19 @@ shared interface Entity satisfies Storable {
 
 " Web Context"
 shared interface WebContext satisfies Context {
-    shared formal Theme<Layout, Renderer, Binder> theme;
+    shared formal Theme theme;
 }
 
-shared interface Theme<LS, RS, BS> 
-        given LS satisfies Layout
-        given RS satisfies Renderer
-        given BS satisfies Binder {
+shared interface Theme {
     shared formal String id;
-    shared formal LS layout;
-    shared formal RS renderer;
-    shared formal BS binder;
+    shared formal Layout layout;
+    shared formal Renderer renderer;
+    shared formal Binder binder;
     
     shared formal {Template<Markup>*} templates;
     shared formal {Style*} styles;
     shared formal {Script*} scripts;
     shared formal {Region*} regions;
+    
+    shared formal String assemble(TaggedMarkup  tm);
 }

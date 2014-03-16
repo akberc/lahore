@@ -6,7 +6,8 @@ module com.dgwave.lahore.core "0.1" {
 
     import ceylon.file "1.0.0";
     import ceylon.collection "1.0.0";
-    import ceylon.json "1.0.0";
+    import ceylon.json "1.0.1";
+    import ceylon.logging "1.0.0";
     
     shared import com.dgwave.lahore.api "0.1"; //only one shared
     

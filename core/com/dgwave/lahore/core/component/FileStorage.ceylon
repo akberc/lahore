@@ -1,4 +1,4 @@
-import com.dgwave.lahore.api { Storage, Config, Primitive, watchdog }
+import com.dgwave.lahore.api { Storage, Config, Primitive }
 import ceylon.file { File, Resource, Directory, Path, Nil, Link }
 
 shared class FileStorage( configDir) satisfies Storage<Config> {
@@ -17,11 +17,11 @@ shared class FileStorage( configDir) satisfies Storage<Config> {
             if (relativePath.endsWith("yml") || relativePath.endsWith("yaml")) {
                 return parseJsonAsConfig(readFileAsString(r));	
             } else {
-                watchdog(3, "FileStorage", "Configuration file ``relativePath`` is not supported");
+                log.error("Configuration file ``relativePath`` is not supported");
                 return null;
             }
         } else {
-            watchdog(3, "FileStorage", "Configuration file ``relativePath`` does not exist!");
+            log.error("Configuration file ``relativePath`` does not exist!");
             return null;
         }		
     }

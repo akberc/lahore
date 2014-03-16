@@ -1,13 +1,10 @@
 import com.dgwave.lahore.api { ... }
-import com.dgwave.lahore.core.component {Page, systemTheme}
-import ceylon.language.meta.model { Method, Function }
-import ceylon.file { Path, parseURI }
-import ceylon.net.http { HttpMethod=Method, get, post, contentType }
-import ceylon.net.http.server { Matcher, Request, Response }
-import ceylon.io.charset { utf8 }
 
-class WebRoute (pluginId, name, methods, String routePath, produce, 
-String? routerPermission = null)  satisfies Route {
+import ceylon.language.meta.model { Method, Function }
+import ceylon.file { Path, parseURI, parsePath }
+import ceylon.language.meta.declaration { ClassDeclaration }
+
+class WebRoute (pluginId, name, methods, String routePath, produce, String? routerPermission = null)  satisfies Route {
     shared actual String pluginId;
     shared actual String name;
     shared actual Methods[] methods;
@@ -29,61 +26,68 @@ class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {
         }
     }
     shared actual String context = siteConfig.stringWithDefault("context", "/" + siteId);
-    Path siteStaticDir = server.defaultContext.staticResourcePath("site", siteId);
-    shared actual Path staticURI = parseURI(siteConfig.stringWithDefault("static", 
-    siteStaticDir.uriString));
+    Path siteStaticDir = parsePath(server.defaultContext.staticResourcePath("site", siteId));
+    shared actual Path staticURI = parseURI(siteConfig.stringWithDefault("static", siteStaticDir.uriString));
     shared actual Config config = siteConfig;
     shared actual {String*} enabledPlugins = config.stringsWithDefault("enabledPlugins", ["system", "help", "menu"]);
-    shared actual {HttpMethod*} acceptMethods = {get, post};
-    shared actual default {WebRoute*} routes = 
-            context == "/admin" then 
-    plugins.routesFor(enabledPlugins, true)
-            .filter((WebRoute wr) => wr.path.startsWith("/admin") || wr.path.startsWith("admin")) 
-    else plugins.routesFor(enabledPlugins);
+    shared actual {HttpMethod*} acceptMethods = {httpGET, httpPOST};
+    shared actual default {WebRoute*} routes = context == "/admin" 
+        then plugins.routesFor(enabledPlugins, true)
+                .filter((WebRoute wr) => wr.path.startsWith("/admin") || wr.path.startsWith("admin")) 
+        else plugins.routesFor(enabledPlugins);
     shared actual Matcher matcher = ParamMatcher(context);
     
     String? page404 = config.stringOnly("pages.404");
     String? page403 = config.stringOnly("pages.403");
     String? pageFront = config.stringOnly("pages.front");
     
+    value theme {
+        ClassDeclaration? themeCls = plugins.theme("system");
+        if (exists themeCls) {
+            value siteTheme = themeCls.instantiate([], this);
+            if (is Theme siteTheme) {
+                return siteTheme;
+            }
+        }
+        return NullTheme(this);
+    }
     
     doc("Web request/response service")
-    shared actual Anything(Request, Response) endService =>externalService;
-    void externalService (Request req, Response resp) {
+    shared actual void siteService (Request req, Response resp) {
+
+		
         // create a new context
-        DefaultWebContext dc = DefaultWebContext(server.defaultContext, systemTheme, config); 
+        DefaultWebContext dc = DefaultWebContext(server.defaultContext, theme, config); 
         dc.put("path",req.path);
         dc.put("method", req.method.string);
         dc.put("headers", req.headers);
         dc.put("parameters", req.parameters);
         dc.put("request", req); //Kludge for now TODO
-        
-        resp.addHeader(contentType { 
-            contentType = "text/html"; 
-            charset = utf8; });	
             
         String? method = dc.contextParam("method");
-        WebRoute? r;
-        if (exists method) {
-            r = findApplicableRoute(method, req.path.spanFrom(1), dc);
-        } else {
-            resp.responseStatus = 500;
-            resp.writeString(context + "Internal Server Error");
-            return;
+
+        WebRoute? rt {
+            if (exists method) {
+                return findApplicableRoute(method, req.path.spanFrom(1), dc);
+            } else {
+                resp.withStatus(500);
+                resp.writeString(context + "Internal Server Error");
+                return null;
+            }
         }
             
-        if (exists r) {	
+        if (exists r = rt) {	
             PluginImpl? plugin = plugins.plugin(r.pluginId);
             if (exists plugin) {						
-                Page? p = plugin.produceRoute(dc, r);
-                if (exists p) {
-                    resp.writeString(p.render());
+                Result p = plugin.produceRoute(dc, r);
+                if (exists p, is Assoc | Fragment p) {
+                    resp.writeString(theme.assemble(theme.renderer.render({p})));
                 } else {
-                    resp.responseStatus = 500;
+                    resp.withStatus(500);
                     resp.writeString(context + "Internal Server Error");
                 }
             } else {
-                resp.responseStatus = 500;
+                resp.withStatus(500);
                 resp.writeString(context + "Internal Server Error");				
             }
         } else {
@@ -94,7 +98,7 @@ class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {
                     resp.writeString(context + "Front Page");
                 }
             } else {
-                resp.responseStatus = 404;
+                resp.withStatus(500);
                 if (exists page = page404) {
                     resp.writeString(page);
                 } else {
@@ -106,9 +110,9 @@ class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {
     
     doc("Internal method to find an applicable route given a path")		
     WebRoute? findApplicableRoute(String method, String path, DefaultWebContext dc) {
-        watchdog(6, "WebSite", "Looking for route: " + method + " " + path);
+        log.debug("Looking for route: " + method + " " + path);
         for (r in routes) {
-            watchdog(7, "WebSite", "Evaluating route : " + r.string);
+            log.debug("Evaluating route : " + r.string);
             
             {String*} pathSegments = r.path.split((Character ch) => ch == '/');
             {Entry<Integer, String>*} tokens = getPathTokens(pathSegments);
@@ -116,21 +120,21 @@ class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {
             if (!tokens.empty) {
                 value token = tokens.first;
                 if (exists token) {
-                    watchdog(8, "WebSite", "Found path token in template: " + token.item + " at position " + token.key.string); // TODO loop
+                    log.debug("Found path token in template: " + token.item + " at position " + token.key.string); // TODO loop
                     variable String keyPath = ""; variable String keyVal = "";
                     {String*} inSegments = path.split((Character ch) => ch == '/');
-                    watchdog(8, "WebSite", "Incoming path segments: " + inSegments.string);
+                    log.debug("Incoming path segments: " + inSegments.string);
                     variable Integer j = 0;
                     for(seg in inSegments) {
                         if (j == token.key) {
                             keyVal = seg;
-                            watchdog(8, "WebSite", "Found value matching token in path: " + keyVal);
+                            log.debug("Found value matching token in path: " + keyVal);
                             break;
                         }
                         keyPath = keyPath + seg + "/";
                         j++;
                     }
-                    watchdog(8, "WebSite", "Modified path is " + keyPath);
+                    log.debug("Modified path is " + keyPath);
                     if (keyVal!= "" && keyPath.endsWith("/") && r.path.startsWith(keyPath)) {
                         dc.putIntoMap("pathParam", token.item, keyVal);
                         return r;
@@ -162,5 +166,5 @@ class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {
 class ParamMatcher(String context) extends Matcher(){
     
     matches(String path) => path.startsWith(context);
-    relativePath(String requestPath) => requestPath[context.size...];
+
 }

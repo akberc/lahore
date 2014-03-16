@@ -89,15 +89,6 @@ shared class Body({Script | Heading | ContainerMarkup | P | Div+} children) exte
     shared actual {Markup*} containedFragments = { for (f in children) if (is Markup f) f};
 }
 
-shared class Div({Heading | ContainerMarkup | Div | Span | Input *} children, 
-String? id = null, String[] classes = empty, {Entry<String, String>*} attrs = {}) extends Markup(id, classes, attrs) satisfies ContainerMarkup {
-    
-    shared actual String element = "div";
-    
-    shared actual {Markup*} containedFragments = { for (f in children) if (is Markup f) f};
-    
-}
-
 shared class Table({Tr*} rows, Thead? thead = null, Tbody? tbody = null, Tfoot? tfoot = null, 
 String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={}) 
         extends Markup(id, classes, attrs) satisfies ContainerMarkup {
@@ -164,7 +155,7 @@ String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={})
         shared actual String containedContent = content;
     }
 
-    shared class Heading(String el, String content, String? id, String[] classes, {Entry<String, String>*} attrs={}) 
+    shared abstract class Heading(String el, String content, String? id, String[] classes, {Entry<String, String>*} attrs={}) 
             extends Markup(id, classes, attrs) satisfies ContainedMarkup {
         shared actual String element = el;
         shared actual String containedContent = content;
@@ -210,13 +201,6 @@ String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={})
             extends Markup(id, classes, attrs) satisfies ContainedMarkup {
         shared actual String element = "li";
         shared actual String containedContent = content.string;	
-    }
-
-    shared class Nav({Heading | Ol | Ul | Anchor*} children, String? id = null, String[] classes = empty, {Entry<String, String>*} attrs = {}) 
-            extends Markup(id, classes, attrs) satisfies ContainerMarkup {
-        shared actual String element = "nav";
-        //shared actual {Entry<String, String>*} attributes = attrs;
-        shared actual variable {Markup*} containedFragments = children; 
     }
 
     shared class Anchor(String content, String? id, String[] classes, {Entry<String, String>*} attrs) 

@@ -1,13 +1,39 @@
-import com.dgwave.lahore.api { watchdog }
+import ceylon.logging { ... }
+import com.dgwave.lahore.api { Config }
+
+Logger log = logger(`module com.dgwave.lahore.server.single`);
+
+Config bootConfig = SystemConfig();
 
 "Run the `Lahore` standalone server."
 shared void run() {
-    watchdog(0, "Lahore", "VM version: " + runtime.version);
-    watchdog(0, "Lahore", "Operating System: " + operatingSystem.name + " - " + operatingSystem.version);
-    watchdog(0, "Lahore", "VM Arguments: " + process.arguments.string);
-    watchdog(0, "Lahore", "Lahore version: 0.1");
+
+	String configuredPriority = bootConfig.stringWithDefault("lahore.logPriority", "INFO");
+	for (priority in { fatal, error, warn, info, debug, trace }) {
+		if (priority.string.equals(configuredPriority)) {
+			defaultPriority = priority;
+			break; 
+		}
+	}
+		
+    addLogWriter {
+        void log(Priority p, Category c, String m, Exception? e) {
+            value print = p<=info 
+            then process.writeLine 
+            else process.writeError;
+            print("[``system.milliseconds``] ``p.string`` ``m``");
+            if (exists e) {
+                printStackTrace(e);
+            }
+        }
+    };
+      
+    log.info("VM version: " + runtime.version);
+    log.info("Operating System: " + operatingSystem.name + " - " + operatingSystem.version);
+    log.info("VM Arguments: " + process.arguments.string);
+    log.info("Lahore version: 0.1");
     
-    watchdog(0, "Lahore", "Using Lahore boot directory: ``lahoreServer.home.string``");
+    log.info("Using Lahore boot directory: ``lahoreServer.home.string``");
     lahoreServer.boot();
     createServers();	 	 	
 } 

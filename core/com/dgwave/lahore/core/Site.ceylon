@@ -1,12 +1,11 @@
 import com.dgwave.lahore.api { ... }
-import ceylon.file { Path, parsePath }
 import ceylon.collection { HashMap }
 import com.dgwave.lahore.core.component { AssocConfig, fileStorage }
 
-class DefaultWebContext(Context fromContext,  theme, config) 
+class DefaultWebContext(Context fromContext, theme, config) 
         extends HashMap<String, Object>() satisfies WebContext {
     
-    shared actual Theme<Layout, Renderer, Binder> theme;
+    shared actual Theme theme;
     shared Config config;	
     
     shared actual Entity? entity {
@@ -19,8 +18,8 @@ class DefaultWebContext(Context fromContext,  theme, config)
         return null;		
     }
     
-    shared actual default Path staticResourcePath(String type, String name) {
-        return parsePath("/" + name + "." + type);
+    shared actual default String staticResourcePath(String type, String name) {
+        return "/" + name + "." + type;
     }
     
     shared actual String? contextParam(String key) {
@@ -37,8 +36,8 @@ class DefaultWebContext(Context fromContext,  theme, config)
         HashMap<String, String> newMap = HashMap<String, String>();
         Object? o = get(key);
         if (exists o) {
-            if (is Map<String, String> o) {
-                return (HashMap<String, String>(o));
+            if (is HashMap<String, String> o) {
+                return o;
             }
         } else {
             put(key, HashMap<String, String>());
@@ -69,7 +68,7 @@ class DefaultWebContext(Context fromContext,  theme, config)
         Object? o = get(mapItem);
         if (exists o) {
             if (is HashMap<String, String> o) {
-                (HashMap<String, String>(o)).put(key,item);
+                o.put(key,item);
             }
         } else {
             HashMap<String, String> newMap = HashMap<String, String>();
@@ -109,12 +108,12 @@ void loadAdminSite(Server adminServer) {
     if (exists site = loadSite("admin", adminServer, true)) {
         adminServer.addSite(site);
     } else {
-        watchdog(0, "Lahore", "Admin site could not be loaded - will end now!");
+        log.error("Admin site could not be loaded - will end now!");
     }
 }
 
 Site? loadSite(String siteId, Server server, Boolean create) {
-    watchdog(2, "Lahore", "Loading site `` siteId`` ");
+    log.debug("Loading site `` siteId`` ");
     value configStorage = fileStorage(server.config.childPath(siteId + ".site"));
     Config? siteConfig = configStorage.load("site.yaml");
 
@@ -131,13 +130,7 @@ Site? loadSite(String siteId, Server server, Boolean create) {
 }
 
 Site? createSite(String siteId, Config config, Server server) {
-    if ("web" == config.stringWithDefault("type", "web")) {
-        return WebSite(siteId, config, server);
-    }
-    else if ("rest" == config.stringWithDefault("type", "web")) {
-        return RestSite(siteId, config);
-    } else {
-        watchdog(0, "Lahore", "Only `web` and `rest` type of sites supported");
-        return null;
-    }
+
+    return WebSite(siteId, config, server);
+
 }

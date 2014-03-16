@@ -16,6 +16,8 @@ class Plugins(String[] lahorePlugins) {
     doc("Plugin:identifier to contribution map")
     HashMap<String, String[]> pluginContributions = HashMap<String, String[]>();
     
+    HashMap<String, ClassDeclaration> themes = HashMap<String, ClassDeclaration>();
+    
     doc("Exchange contribution implementations")
     void registerContributions() {
         for (impl in pluginFinals) {
@@ -23,14 +25,12 @@ class Plugins(String[] lahorePlugins) {
             if (exists myInterfaceDecl) {
                 String myInterfaceName = myInterfaceDecl.containingPackage.name + "." + myInterfaceDecl.name;
                 for (contributor in pluginContributions) {
-                    if (contributor.item.contains(myInterfaceName)) {
-                        if (exists contributorPlugin = pluginFinals.get(contributor.key)) {
-                            if (is PluginRuntimeImpl pri = impl.item.plugin) {
-                                if (is Contribution cppi = contributorPlugin.pluginInstance) {
-                                    pri.addContribution(contributor.key, cppi);
-                                }
-                            }
-                        }
+                    if (contributor.item.contains(myInterfaceName),
+                        exists contributorPlugin = pluginFinals.get(contributor.key),
+                        is PluginRuntimeImpl pri = impl.item.plugin,
+                        is Contribution cppi = contributorPlugin.pluginInstance) {
+                            pri.addContribution(contributor.key, cppi);
+
                     }
                 }
             }
@@ -49,34 +49,31 @@ class Plugins(String[] lahorePlugins) {
             String? pluginDesc = cm.annotations<Description>().empty
                 then pluginId else cm.annotations<Description>().first?.description;
             String? pluginConfigure = cm.annotations<Configure>().empty
-            then pluginId else cm.annotations<Configure>().first?.configureLink;			
+                then pluginId else cm.annotations<Configure>().first?.configureLink;			
             
             if (pluginInfos.contains(pluginId)) {
-                watchdog(0, "Lahore", "A module with that id already registered. Plugin NOT registered: ``cm``");
+                log.warn("A module with that id already registered. Plugin NOT registered: ``cm``");
             } else {
-                watchdog(1, "Plugins", "Internal register Plugin : ``pluginId``");
-                if (exists pluginName) { // should always exit
-                    if (exists pluginDesc) {
-                        if (exists pluginConfigure) {
-                            pluginInfos.put(pluginId, PluginInfoImpl {
-                                moduleName = cm.name;
-                                moduleVersion = cm.version;						  	
-                                id = pluginId;
-                                name = pluginName; 
-                                description = pluginDesc; 
-                                configurationLink = pluginConfigure;
-                                pluginClass = pluginClass; 
-                                contributionInterface = contribInterface; 
-                                contributeList = contribImpls;
-                            });
-                            pluginContributions.put(pluginId, contribImpls);
-                        }
-                    }
+                log.info("Internal register Plugin : ``pluginId``");
+                if (exists pluginName,
+                    exists pluginDesc,
+                    exists pluginConfigure) {
+                        pluginInfos.put(pluginId, PluginInfoImpl {
+                            moduleName = cm.name;
+                            moduleVersion = cm.version;						  	
+                            id = pluginId;
+                            name = pluginName; 
+                            description = pluginDesc; 
+                            configurationLink = pluginConfigure;
+                            pluginClass = pluginClass; 
+                            contributionInterface = contribInterface; 
+                            contributeList = contribImpls;
+                        });
+                        pluginContributions.put(pluginId, contribImpls);   
                 }
             }
-            
         } else {
-            watchdog(0, "Lahore", "Plugin NOT registered, not found annotation 'id' on: ``pluginClass``");
+            log.error("Plugin NOT registered, not found annotation 'id' on: ``pluginClass``");
             return;
         }
     }
@@ -84,7 +81,7 @@ class Plugins(String[] lahorePlugins) {
     doc("Recursively parse dependencies")	
     HashSet<String> parseDependencies(String cmName, String cmVersion, String id, HashSet<String> oldList) {
         // start with ourselves, and then fan out
-        variable HashSet<String> list = HashSet<String>(oldList);
+        variable HashSet<String> list = HashSet<String>{ elements = oldList;};
         
         Null|Module us = modules.find(cmName, cmVersion );
         
@@ -93,8 +90,7 @@ class Plugins(String[] lahorePlugins) {
                 list.add(id); // only added if found
                 for (dep in us.dependencies) {
                     if (exists depId = pluginInfos.find((String->PluginInfo inf) => 
-                            dep.name == inf.item.moduleName && dep.version == inf.item.moduleVersion) )
-                    {
+                            dep.name == inf.item.moduleName && dep.version == inf.item.moduleVersion) ) {
                         list.addAll(parseDependencies(dep.name, dep.version, 
                         depId.key, list));
                     }
@@ -114,8 +110,7 @@ class Plugins(String[] lahorePlugins) {
             String[] deps = parseDependencies(s.moduleName, s.moduleVersion, s.id, HashSet<String>()).sequence;
             pluginInfos.put(info.key, s.withDependsOn(deps));
         }
-        
-        
+
         for (info in pluginInfos) {
             value depBy = pluginInfos.collect<String>((String->PluginInfo inf) => 
                     inf.item.dependsOn(info.key) then inf.key else "~NO~")
@@ -129,28 +124,26 @@ class Plugins(String[] lahorePlugins) {
     for (lp in lahorePlugins) {
         try {
             value pluginName = lp.split((Character ch) => ch == '/');
-            String? cmName = pluginName.first;
-            String? cmVersion = pluginName.skipping(1).first;
-            variable Module? ceylonModule = null;
-            if (exists cmName) {
-                if (exists cmVersion) {
-                    ceylonModule = modules.find(cmName, cmVersion);
-                }
-            }
             
-            if (exists cm = ceylonModule) {
-            if (exists pluginId = cm.annotations<Id>().first?.id ) {
+            if (exists cmName = pluginName.first,
+                exists cmVersion = pluginName.skipping(1).first,
+                exists cm = modules.find(cmName, cmVersion),
+                exists pluginId = cm.annotations<Id>().first?.id ) {
                 for (Package pk in cm.members) {
                     if (cm.name == pk.name) {
                         variable ClassDeclaration? pc = null;
-                        variable value impls = LinkedList<String>();
+                        value impls = LinkedList<String>();
                         for (ClassDeclaration cid in pk.members<ClassDeclaration>()) {
                             for (interf in cid.satisfiedTypes) {
                                 String fullName = interf.declaration.containingPackage.name + "." + interf.declaration.name;
-                                watchdog(8, "Plugins", "Evaluating interface for plugin: ``fullName``");
+                                log.debug("Evaluating interface for plugin: ``fullName``");
                                 if ("com.dgwave.lahore.api.Plugin".equals(fullName)) {
-                                    watchdog(0, "Lahore", "Loading - " + cm.name + pk.name + "." + cid.name);
+                                    log.debug("Loading - " + cm.name + pk.name + "." + cid.name);
                                     pc = cid;
+                                }
+                                if ("com.dgwave.lahore.api.Theme".equals(fullName)) {
+                                    log.debug("Loading theme - " + cm.name + pk.name + "." + cid.name);
+                                    themes.put("system", cid);
                                 }
                                 for (superInterf in interf.satisfiedTypes) {
                                     String superFullName = superInterf.declaration.containingPackage.name + "." + superInterf.declaration.name;							
@@ -165,7 +158,7 @@ class Plugins(String[] lahorePlugins) {
                             for (InterfaceDeclaration iid in pk.members<InterfaceDeclaration>()) {
                                 for (interf in iid.satisfiedTypes) {
                                     String fullName = interf.declaration.containingPackage.name + "." + interf.declaration.name;
-                                    watchdog(8, "Plugins", "Evaluating interface for hook ``fullName``");
+                                    log.debug("Evaluating interface for hook ``fullName``");
                                     if ("com.dgwave.lahore.api.Contribution".equals(fullName)) {
                                         hc = iid;
                                     }
@@ -176,11 +169,9 @@ class Plugins(String[] lahorePlugins) {
                     }
                 }
             }
-            }
         } catch (Exception e){
             // nothing
-            watchdog(0, "Lahore", "Error registering Plugin: ``lp`` : " + e.message);
-            e.printStackTrace();
+            log.error("Error registering Plugin: ``lp`` : ", e);
         }
     }		
     
@@ -245,6 +236,12 @@ class Plugins(String[] lahorePlugins) {
         return {}; 
     }
     
+    shared ClassDeclaration? themeClass (String themeId) {
+        if (exists themeCls = themes.get(themeId)) {
+            return themeCls;
+        }
+        return null;
+    }  
 }
 
 
@@ -267,8 +264,12 @@ object plugins {
         return mh.findPlugin(pluginId); 
     }
     
-    shared PluginInfoImpl? info (String pluginId) {
+    shared PluginInfoImpl? info(String pluginId) {
         return mh.findPluginInfo(pluginId);    }
+    
+    shared ClassDeclaration? theme(String themeId) {
+        return mh.themeClass(themeId);
+    }
     
     shared String[] list => mh.list;
 }
