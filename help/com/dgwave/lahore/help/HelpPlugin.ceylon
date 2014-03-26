@@ -1,9 +1,9 @@
 import com.dgwave.lahore.api { ... }
 import com.dgwave.lahore.menu { Menu, MenuContribution }
 
-shared class HelpPlugin(Runtime runtime) satisfies Plugin & MenuContribution & HelpContribution & TemplateContribution {
+shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContribution & TemplateContribution {
 
-    shared actual Runtime plugin = runtime;
+    shared Runtime plugin;
 
     "Contributes to help"
     shared actual Result help(Context c)  {

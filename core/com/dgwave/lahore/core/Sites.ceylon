@@ -1,8 +1,90 @@
 import com.dgwave.lahore.api { ... }
-
+import ceylon.collection { HashMap }
 import ceylon.language.meta.model { Method, Function }
-import ceylon.file { Path, parseURI, parsePath }
-import ceylon.language.meta.declaration { ClassDeclaration }
+
+class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {	
+    
+    shared actual Entity? entity {
+        Object? o = get("entity");
+        if (exists o) {
+            if (is Entity o) {
+                return o;
+            }
+        }
+        return null;		
+    }
+    
+    shared actual default String staticResourcePath(String type, String name) {
+        return "/" + name + "." + type;
+    }
+    
+    shared actual String? contextParam(String key) {
+        Object? o = get(key);
+        if (exists o) {
+            if (is String o) {
+                return o;
+            }
+        }
+        return null;
+    }
+    
+    HashMap<String, String> getAsMap(String key) {
+        HashMap<String, String> newMap = HashMap<String, String>();
+        Object? o = get(key);
+        if (exists o) {
+            if (is HashMap<String, String> o) {
+                return o;
+            }
+        } else {
+            put(key, HashMap<String, String>());
+            return getAsMap(key); // recursive
+        }
+        return newMap;// no use
+    }
+    
+    shared actual String pathParam(String key) {
+        String? val = getAsMap("pathParam").get(key);
+        if (exists val) {
+            return val;
+        } else {
+            return "";
+        }
+    }
+    
+    shared actual String? queryParam(String key) {
+        String? val = getAsMap("queryParam").get(key);
+        if (exists val) {
+            return val;
+        } else {
+            return "";
+        }
+    }
+    
+    shared void putIntoMap(String mapItem, String key, String item) {
+        Object? o = get(mapItem);
+        if (exists o) {
+            if (is HashMap<String, String> o) {
+                o.put(key,item);
+            }
+        } else {
+            HashMap<String, String> newMap = HashMap<String, String>();
+            newMap.put(key,item);
+            put(mapItem, newMap);
+        }
+    }
+    
+    shared actual Context passing(String key, Assocable arg) { // TODO scope
+        put(key, arg);
+        return this;
+    }
+    
+    shared actual Assocable passed(String key) {
+        if (is Assocable assocable = get(key)) {
+            return assocable;
+        }
+        return "";
+    }	
+}
 
 class WebRoute (pluginId, name, methods, String routePath, produce, String? routerPermission = null)  satisfies Route {
     shared actual String pluginId;
@@ -10,100 +92,61 @@ class WebRoute (pluginId, name, methods, String routePath, produce, String? rout
     shared actual Methods[] methods;
     shared actual String path = routePath;
     shared actual Method<Anything,Result,[Context]>
-        |Function<Result,[Context, PluginInfo&PluginRuntime]> produce;
+            |Function<Result,[Context, Runtime]> produce;
     shared actual String string = 
             "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
 }
 
-class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {	
-    shared actual String site = siteId;
-    shared actual String host = siteConfig.stringWithDefault("host", "localhost");
-    shared actual Integer port  { 
-        if (exists p = parseInteger(siteConfig.stringWithDefault("port","8080"))) { 
-            return p;
-        } else {
-            return 8080;
-        }
-    }
-    shared actual String context = siteConfig.stringWithDefault("context", "/" + siteId);
-    Path siteStaticDir = parsePath(server.defaultContext.staticResourcePath("site", siteId));
-    shared actual Path staticURI = parseURI(siteConfig.stringWithDefault("static", siteStaticDir.uriString));
-    shared actual Config config = siteConfig;
-    shared actual {String*} enabledPlugins = config.stringsWithDefault("enabledPlugins", ["system", "help", "menu"]);
-    shared actual {HttpMethod*} acceptMethods = {httpGET, httpPOST};
-    shared actual default {WebRoute*} routes = context == "/admin" 
-        then plugins.routesFor(enabledPlugins, true)
-                .filter((WebRoute wr) => wr.path.startsWith("/admin") || wr.path.startsWith("admin")) 
-        else plugins.routesFor(enabledPlugins);
-    shared actual Matcher matcher = ParamMatcher(context);
+class SiteRuntime(site, context, theme) {
+    shared Site site;
+    String context;
+    Theme theme;
+    shared variable Plugins? plugins = null;
+    {WebRoute*} routes = plugins?.routesFor(empty, true) else {};
     
-    String? page404 = config.stringOnly("pages.404");
-    String? page403 = config.stringOnly("pages.403");
-    String? pageFront = config.stringOnly("pages.front");
-    
-    value theme {
-        ClassDeclaration? themeCls = plugins.theme("system");
-        if (exists themeCls) {
-            value siteTheme = themeCls.instantiate([], this);
-            if (is Theme siteTheme) {
-                return siteTheme;
-            }
-        }
-        return NullTheme(this);
-    }
-    
-    doc("Web request/response service")
-    shared actual void siteService (Request req, Response resp) {
-
-		
+    "Web request/response service"
+    shared void siteService (Request req, Response resp) {
+           
         // create a new context
-        DefaultWebContext dc = DefaultWebContext(server.defaultContext, theme, config); 
+        DefaultWebContext dc = DefaultWebContext(); 
         dc.put("path",req.path);
         dc.put("method", req.method.string);
         dc.put("headers", req.headers);
         dc.put("parameters", req.parameters);
         dc.put("request", req); //Kludge for now TODO
-            
+        
         String? method = dc.contextParam("method");
-
+        
         WebRoute? rt {
             if (exists method) {
                 return findApplicableRoute(method, req.path.spanFrom(1), dc);
             } else {
                 resp.withStatus(500);
-                resp.writeString(context + "Internal Server Error");
+                resp.writeString(site.page500.render());
                 return null;
             }
         }
-            
+        
         if (exists r = rt) {	
-            PluginImpl? plugin = plugins.plugin(r.pluginId);
+            PluginImpl? plugin = plugins?.plugin(r.pluginId);
             if (exists plugin) {						
                 Result p = plugin.produceRoute(dc, r);
                 if (exists p, is Assoc | Fragment p) {
                     resp.writeString(theme.assemble(theme.renderer.render({p})));
                 } else {
                     resp.withStatus(500);
-                    resp.writeString(context + "Internal Server Error");
+                    resp.writeString(site.page500.render());
                 }
             } else {
                 resp.withStatus(500);
-                resp.writeString(context + "Internal Server Error");				
+                resp.writeString(site.page500.render());				
             }
         } else {
             if (req.path.equals(context) || req.path.equals(context + "/")) {
-                if (exists page = pageFront) {
-                    resp.writeString(page);
-                } else {
-                    resp.writeString(context + "Front Page");
-                }
+                resp.writeString(context + "Front Page");
             } else {
                 resp.withStatus(500);
-                if (exists page = page404) {
-                    resp.writeString(page);
-                } else {
-                    resp.writeString("Page not Found");
-                }
+                resp.writeString(site.page404.render());
             }
         }
     }
@@ -148,7 +191,7 @@ class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {
         }
         return null;
     }		
-    
+
     {Entry<Integer, String>*} getPathTokens({String*} tokens) {
         {Entry<Integer, String>*} ret = {};
         variable Integer i=0;
@@ -161,10 +204,15 @@ class WebSite(String siteId, Config siteConfig, Server server) satisfies Site {
         return ret;
     }
 }
-    
+
+abstract class Matcher() {
+    shared formal Boolean matches(String path);
+}
 
 class ParamMatcher(String context) extends Matcher(){
     
     matches(String path) => path.startsWith(context);
-
+    
 }
+
+HashMap<String, SiteRuntime>siteRegistry = HashMap<String, SiteRuntime>();

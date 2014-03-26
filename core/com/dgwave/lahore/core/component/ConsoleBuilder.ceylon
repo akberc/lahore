@@ -1,5 +1,4 @@
 import com.dgwave.lahore.api { ... }
-import com.dgwave.lahore.server.single { lahorePlugins }
 
 shared class HtmlBuilder(String path) {
 
@@ -116,9 +115,9 @@ shared class HtmlBuilder(String path) {
       }.chain( {
         for (ws in webSites) 
           Tr ({
-            Td (ws.item.site),
+            Td (ws.item.string), // TODO replace with context from SiteRuntime - and below
             Td (ws.key),
-            Td ("``ws.item.acceptMethods`` ``ws.item.contentTypes`` with plugins ``ws.item.enabledPlugins``"),
+            Td ("--"), //``ws.item.acceptMethods`` ``ws.item.contentTypes`` with plugins ``ws.item.enabledPlugins``"),
             Td ( 
               Div { classes= ["btn-group"];
                 button ("Stop", false, null, "btn", "btn-inverse"),
@@ -168,45 +167,5 @@ shared class HtmlBuilder(String path) {
           })
         };
       };
-    }
-    
-    shared void addTasks(String q, TaskDAO dao) {
-      Form { method="GET"; action=".";
-        Label ("New Task"),
-        Div { classes = ["input-append"];
-          Text { name = "message"; placeHolder="Enter new task ..."; content="";},
-          Button {type="submit"; classes=["btn"]; content="Add";}
-        },
-        Div { classes = ["input-append"];
-          Label ("Filter"),
-          Text { name = "q"; content=q;},
-          Button {type="submit"; classes=["btn"]; content="Apply";},
-          Button {type="submit"; classes=["btn"]; content="Remove";
-            invoke="this.form.q.value=''; this.form.submit();";}
-        }
-      };
-
-  //    Tr makeTr (Task task) {
-  //      String onClickDone="onclick=\"document.location='?q=" + q + "&" + (task.done then "markNotDone" else "markDone") + "=" + task.id + "'\"";
-  //      String onClickRemove="onclick=\"document.location='?q=" + q + "&remove=" + task.id + "'\"";
-  //
-  //      return Tr( {
-  //        Td (Label {classes=["checkbox"];})
-  //      });
-  //    }
-//      for (Task task in dao.tasks(q)) {
-//
-//        html += "<tr>\n";
-//        html += "<td>\n";
-//        html += "<label class=\"checkbox\">\n";
-//        html += "<input type=\"checkbox\"" + (task.done then "checked=\"checked\"" else "");
-//        html += " " + onClickDone + "/>\n";
-//        html += "<span class=\"" + (task.done then "taskDone" else "taskNotDone") + "\">" +  task.message + "</span>\n";
-//        html += "</label>\n";
-//        html += "</td>\n";
-//        html += "<td width=\"20px\">\n";
-//        html += "<i class=\"icon-remove\" " + onClickRemove + "/>\n";
-//        html += "</td>\n";
-//        html += "</tr>\n";
     }
 }

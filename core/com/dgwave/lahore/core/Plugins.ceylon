@@ -3,9 +3,7 @@ import ceylon.language.meta { modules }
 import ceylon.language.meta.declaration { ... }
 import com.dgwave.lahore.api { ... }
 
-import com.dgwave.lahore.core.component { AssocConfig }
-
-class Plugins(String[] lahorePlugins) {
+class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
     
     doc("Plugin:identifier to plugin info")
     value pluginInfos = HashMap<String, PluginInfoImpl>();
@@ -15,9 +13,7 @@ class Plugins(String[] lahorePlugins) {
     
     doc("Plugin:identifier to contribution map")
     HashMap<String, String[]> pluginContributions = HashMap<String, String[]>();
-    
-    HashMap<String, ClassDeclaration> themes = HashMap<String, ClassDeclaration>();
-    
+      
     doc("Exchange contribution implementations")
     void registerContributions() {
         for (impl in pluginFinals) {
@@ -27,9 +23,8 @@ class Plugins(String[] lahorePlugins) {
                 for (contributor in pluginContributions) {
                     if (contributor.item.contains(myInterfaceName),
                         exists contributorPlugin = pluginFinals.get(contributor.key),
-                        is PluginRuntimeImpl pri = impl.item.plugin,
                         is Contribution cppi = contributorPlugin.pluginInstance) {
-                            pri.addContribution(contributor.key, cppi);
+                        impl.item.plugin.addContribution(contributor.key, cppi);
 
                     }
                 }
@@ -47,24 +42,20 @@ class Plugins(String[] lahorePlugins) {
             String? pluginName = cm.annotations<Name>().empty
                 then  pluginId else cm.annotations<Name>().first?.name ;
             String? pluginDesc = cm.annotations<Description>().empty
-                then pluginId else cm.annotations<Description>().first?.description;
-            String? pluginConfigure = cm.annotations<Configure>().empty
-                then pluginId else cm.annotations<Configure>().first?.configureLink;			
+                then pluginId else cm.annotations<Description>().first?.description;			
             
             if (pluginInfos.contains(pluginId)) {
                 log.warn("A module with that id already registered. Plugin NOT registered: ``cm``");
             } else {
                 log.info("Internal register Plugin : ``pluginId``");
                 if (exists pluginName,
-                    exists pluginDesc,
-                    exists pluginConfigure) {
+                    exists pluginDesc) {
                         pluginInfos.put(pluginId, PluginInfoImpl {
                             moduleName = cm.name;
                             moduleVersion = cm.version;						  	
                             id = pluginId;
                             name = pluginName; 
-                            description = pluginDesc; 
-                            configurationLink = pluginConfigure;
+                            description = pluginDesc;
                             pluginClass = pluginClass; 
                             contributionInterface = contribInterface; 
                             contributeList = contribImpls;
@@ -121,13 +112,14 @@ class Plugins(String[] lahorePlugins) {
     }
     
     // OK, now register all the modules once
-    for (lp in lahorePlugins) {
+    for (lp in sitePlugins) {
         try {
             value pluginName = lp.split((Character ch) => ch == '/');
             
             if (exists cmName = pluginName.first,
                 exists cmVersion = pluginName.skipping(1).first,
                 exists cm = modules.find(cmName, cmVersion),
+                exists rootPkg = cm.findPackage(cmName),
                 exists pluginId = cm.annotations<Id>().first?.id ) {
                 for (Package pk in cm.members) {
                     if (cm.name == pk.name) {
@@ -141,10 +133,7 @@ class Plugins(String[] lahorePlugins) {
                                     log.debug("Loading - " + cm.name + pk.name + "." + cid.name);
                                     pc = cid;
                                 }
-                                if ("com.dgwave.lahore.api.Theme".equals(fullName)) {
-                                    log.debug("Loading theme - " + cm.name + pk.name + "." + cid.name);
-                                    themes.put("system", cid);
-                                }
+
                                 for (superInterf in interf.satisfiedTypes) {
                                     String superFullName = superInterf.declaration.containingPackage.name + "." + superInterf.declaration.name;							
                                     if ("com.dgwave.lahore.api.Contribution".equals (superFullName)) {
@@ -178,16 +167,17 @@ class Plugins(String[] lahorePlugins) {
     reCalculateDependencies();
     
     for (inf in pluginInfos) {
-        pluginFinals.put(inf.key, PluginImpl(pluginScope, inf.item, AssocConfig())); 
+        PluginImpl impl = PluginImpl(pluginScope, inf.item, siteRuntime);
+        pluginFinals.put(inf.key, impl);
     }
     
     registerContributions();
     
-    shared PluginImpl? findPlugin(String pluginId) { 
+    shared PluginImpl? plugin(String pluginId) { 
         return pluginFinals.get(pluginId); 
     }
     
-    shared PluginInfoImpl? findPluginInfo(String pluginId) { 
+    shared PluginInfoImpl? info(String pluginId) { 
         return pluginInfos.get(pluginId); 
     }
     
@@ -243,34 +233,3 @@ class Plugins(String[] lahorePlugins) {
         return null;
     }  
 }
-
-
-object plugins {
-    variable String[] pluginNames = [];
-    if (exists ls = lahoreServer) {
-            pluginNames= ls.pluginNames;
-    }
-    Plugins mh  = Plugins(pluginNames);
-    
-    shared {Assoc*} adminTasks(String pluginId) { 
-        return mh.getAdminTasks(pluginId);
-    }
-    
-    shared {WebRoute*} routesFor({String*} sitePlugins, Boolean all = false) { 
-        return mh.routesFor(sitePlugins, all); 
-    }
-    
-    shared PluginImpl? plugin(String pluginId) { 
-        return mh.findPlugin(pluginId); 
-    }
-    
-    shared PluginInfoImpl? info(String pluginId) {
-        return mh.findPluginInfo(pluginId);    }
-    
-    shared ClassDeclaration? theme(String themeId) {
-        return mh.themeClass(themeId);
-    }
-    
-    shared String[] list => mh.list;
-}
-

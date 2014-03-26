@@ -16,7 +16,6 @@ module com.dgwave.lahore.server.single "0.1" {
     
     shared import com.dgwave.lahore.api "0.1";
     import com.dgwave.lahore.core "0.1";
-    import com.dgwave.lahore.server.console "0.1";
-    
+   
     import ceylon.test "1.0.0";
 }

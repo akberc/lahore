@@ -8,6 +8,7 @@ module com.dgwave.lahore.api "0.1" {
     shared import ceylon.file "1.0.0";
     shared import ceylon.io "1.0.0";	
     shared import ceylon.math "1.0.0";
+    shared import ceylon.json "1.0.1";
 
     import ceylon.test "1.0.0";
 }

@@ -21,12 +21,12 @@ shared final annotation class Description(shared String description, shared Stri
 "Annotation to specify Lahore module description" 
 shared annotation Description description(String description, String locale ="en") => Description(description, locale);
 
-"The annotation class for [[configure]]."
-shared final annotation class Configure(shared String configureLink)
-        satisfies OptionalAnnotation<Configure, Module> {}
+"The annotation class for [[site]]."
+shared final annotation class SiteContext(shared String host, shared Integer port, shared String context)
+        satisfies OptionalAnnotation<SiteContext, Module> {}
 
 "Annotation to specify module configuration URL" 
-shared annotation Configure configure(String configureLink) => Configure(configureLink);
+shared annotation SiteContext site(String host, Integer port, String context) => SiteContext(host, port, context);
 
 "The annotation class for [[route]]."
 shared final annotation class RouteAnnotation(shared String routeName, shared String routePath)
@@ -69,18 +69,6 @@ shared final annotation class Methods( shared HttpMethod method)
 
 "Annotation to specify the HTTP methods allowed on a route" 
 shared annotation Methods methods(HttpMethod method) => Methods(method);
-
-"The annotation class for [[resource]]."
-shared abstract class ResourceType()
-        of rTHEME | rTEMPLATE {}
-shared object rTHEME extends ResourceType() { shared actual String string = "THEME"; }
-shared object rTEMPLATE extends ResourceType() { shared actual String string = "TEMPLATE"; }
-
-shared final annotation class ResourceAnnotation( shared ResourceType type, shared String name) 
-        satisfies OptionalAnnotation<ResourceAnnotation, ClassDeclaration> {}
-
-"Annotation to specify the resource type and name" 
-shared annotation ResourceAnnotation resource(ResourceType type, String name) => ResourceAnnotation(type, name);
 
 "The annotation class for [[service]]."
 shared abstract class ServiceType()

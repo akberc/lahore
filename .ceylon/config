@@ -5,9 +5,4 @@ offline=false
 [lahore]
 environment=DEV
 logPriority=DEBUG
-
-[lahore "plugins"]
-preload=com.dgwave.lahore.system/0.1
-preload=com.dgwave.lahore.help/0.1
-preload=com.dgwave.lahore.menu/0.1
-
+site=com.dgwave.lahore.system/0.1

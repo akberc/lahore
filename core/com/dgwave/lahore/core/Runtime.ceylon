@@ -1,13 +1,10 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.collection { HashMap, LinkedList }
 import ceylon.language.meta.declaration { ClassDeclaration, InterfaceDeclaration, FunctionDeclaration }
-import com.dgwave.lahore.core.component { fileStorage, sqlStorage }
 import ceylon.language.meta.model { Class, Method, Function }
-import ceylon.file { parsePath }
-import ceylon.logging { Logger, logger }
 
 class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
-    configurationLink, pluginClass, contributionInterface, 
+    pluginClass, contributionInterface, 
     contributeList =[], dependsOnList=[], dependedByList=[], 
     resourcesList=[], servicesList = []) satisfies PluginInfo {
     
@@ -16,8 +13,6 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     shared actual String moduleName;
     shared actual String moduleVersion;
     shared actual String description;
-    shared actual String configurationLink;
-    shared actual {Task*} configurationTasks = {};	
     
     String[] contributeList;
     shared actual Boolean contributes(String contrib) => contributeList.contains(contrib);
@@ -37,25 +32,23 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     shared actual Boolean providesResource (String resourceId) => resourcesList.contains(resourceId);
     
     shared PluginInfoImpl withDependsOn (String[] dependsOnList=[]) {
-        return PluginInfoImpl(this.id, this.name, this.description, this.configurationLink,
+        return PluginInfoImpl(this.id, this.name, this.description, 
         this.moduleName, this.moduleVersion, this.pluginClass, this.contributionInterface, this.contributeList, dependsOnList, 
         this.dependedByList, this.servicesList, this.resourcesList);
     }
     
     shared PluginInfoImpl withDependedBy (String[] dependedByList=[]) {
-        return PluginInfoImpl(this.id, this.name, this.description, this.configurationLink,
+        return PluginInfoImpl(this.id, this.name, this.description, 
         this.moduleName, this.moduleVersion, this.pluginClass, this.contributionInterface, this.contributeList, this.dependsOnList, 
         dependedByList, this.servicesList, this.resourcesList);	}
     }
     
     "Provides run-time implementations. PluginInfo can be for any plugin.
      Here the info represents the plugin itself, hence the duplication"
-    class PluginRuntimeImpl (info) satisfies PluginInfo & PluginRuntime {
+    class PluginRuntimeImpl (info, site) satisfies Runtime & PluginInfo {
         
-        PluginInfoImpl info;
-
-        shared actual Storage<Config> configStorage = fileStorage((lahoreServer?.config else parsePath("./lahore/config")).childPath(info.id + ".plugin"));
-        shared actual Storage<Entity> entityStorage = sqlStorage(lahoreServer?.data else parsePath("./lahore/data"));
+        shared actual PluginInfoImpl info;
+        SiteRuntime site;
 
         "Keyed by originating plugin and method name, with items being implementations. Populated externally"
         HashMap<String, Contribution> contributions = HashMap<String, Contribution> ();
@@ -67,8 +60,6 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         shared actual String moduleName =>info.moduleName;
         shared actual String moduleVersion => info.moduleVersion;
         shared actual String description => info.description;
-        shared actual String configurationLink => info.configurationLink;
-        shared actual {Task*} configurationTasks => info.configurationTasks;
         
         shared actual Boolean contributes (String contributionId) => info.contributes(contributionId);
         shared actual Boolean dependsOn (String pluginId) => info.dependsOn(pluginId);
@@ -107,7 +98,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }
         
         shared actual Boolean another(String pluginId) {
-            if (exists pi = plugins.info(pluginId)) {
+            if (exists pi = site.plugins?.info(pluginId)) {
                 return true;
             } else {
                 return false;
@@ -115,38 +106,39 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }
         
         shared actual PluginInfo? plugin(String pluginId) {
-            return plugins.info(pluginId);
+            return site.plugins?.info(pluginId);
         }
     }
     
     doc("The runtime representation of a plugin")
-    class PluginImpl (scope, pluginInfo, config) satisfies Plugin {
+    class PluginImpl (scope, pluginInfo, site) satisfies Plugin {
         
-        shared Scope scope;
-        shared PluginInfoImpl pluginInfo;
-        shared Config config;
+        Scope scope;
+        PluginInfoImpl pluginInfo;
+        SiteRuntime site;
         
         shared LinkedList<WebRoute> routes = LinkedList<WebRoute>();
         
-        shared actual Runtime plugin = PluginRuntimeImpl(pluginInfo);  // pass on for actual invocation
+        shared PluginRuntimeImpl plugin = PluginRuntimeImpl(pluginInfo, site);
         
-        shared variable Plugin? pluginInstance = null;
-        
-        // instantiate class and interface from info and inject the run-time
-        value instantiable = pluginInfo.pluginClass.apply<Plugin>();
-        if (is Class<Anything, [PluginInfo & PluginRuntime]> instantiable) {
-            value instance = instantiable(plugin);
-            if (is Plugin instance) {
-                pluginInstance = instance;
+        shared Plugin? pluginInstance {    
+            // instantiate class and interface from info and inject the run-time
+            value instantiable = pluginInfo.pluginClass.apply<Plugin>();
+            if (is Class<Anything, [Runtime]> instantiable) {
+                value instance = instantiable(plugin);
+                if (is Plugin instance) {
+                    return instance;
+                }
             }
+            return null;
         }
         
         //top-level routes
         for ( a in pluginInfo.pluginClass.containingPackage
                 .annotatedMembers<FunctionDeclaration, RouteAnnotation>()) {
             if (exists ra = a.annotations<RouteAnnotation>().first) {
-                Function<Result,[Context, PluginInfo & PluginRuntime]>method = 
-                        a.apply<Result, [Context, PluginInfo & PluginRuntime]>();
+                Function<Result,[Context, Runtime]>method = 
+                        a.apply<Result, [Context, Runtime]>();
     
                 WebRoute webRoute = WebRoute(pluginInfo.id, ra.routeName, a.annotations<Methods>(), 
                     ra.routePath, method, a.annotations<Permission>().first?.permission);
@@ -174,7 +166,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
             if ( is Method<Anything,Result,[Context]> producer = r.produce) {
                 return producer(pluginInstance)(c); 
             }
-            else if ( is Function<Result,[Context, PluginInfo&PluginRuntime]> producer = r.produce) { 
+            else if ( is Function<Result,[Context, Runtime]> producer = r.produce) { 
                 return producer(c, plugin);                    
             } else {
                 return null;
@@ -203,14 +195,4 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
 class ContributionImpl(pluginId) satisfies Contribution {
     shared actual String pluginId;
     
-}
-   
-variable Server? lahoreServer = null;
-
-Logger log = logger(`module com.dgwave.lahore.core`);
-
-shared void runWith(Server server) {
-    lahoreServer = server;
-    loadAdminSite(server);
-    loadOtherSites(server);
 }

@@ -1,5 +1,6 @@
 import ceylon.logging { ... }
 import com.dgwave.lahore.api { Config }
+import com.dgwave.lahore.core { Engine }
 
 Logger log = logger(`module com.dgwave.lahore.server.single`);
 
@@ -35,5 +36,6 @@ shared void run() {
     
     log.info("Using Lahore boot directory: ``lahoreServer.home.string``");
     lahoreServer.boot();
-    createServers();	 	 	
+    Engine engine = Engine({lahoreServer}, lahoreServer.siteList.sequence);
+    lahoreServer.runWith(engine);	 	
 } 

@@ -27,7 +27,7 @@ shared Result helpPage(Context c, Runtime plugin) {
         if (plugin.isContributedToBy(otherPluginName)) {
             
             value temp = plugin.contributionFrom(otherPluginName, 
-            `function HelpContribution.help`, c.passing("path", "admin/help#" + otherPluginName));
+                `function HelpContribution.help`, c.passing("path", "admin/help#" + otherPluginName));
             
             if (exists temp) {
                 build.put("top", assoc ("#markup" -> temp.string) );  
@@ -36,26 +36,10 @@ shared Result helpPage(Context c, Runtime plugin) {
                 build.put("top", assoc ("#markup" -> t("No help is available for module %module.", {"%module" -> otherPluginName})));
             }
             
-            // Only print list of administration pages if the module in question has
-            // any such pages associated to it.
-            value adminTasks = plugin.plugin(otherPluginName)?.configurationTasks; // array of assocs
-            if (exists adminTasks) {
-                if (!adminTasks.empty) {
-                    value links = array();
-                    for (Task task in adminTasks) { // one assoc
-                        //value link = assoc ("localized_options" -> task.getAssoc("localized_options"));
-                        //link.put ("href", task.getString("link_path"));
-                        //link.put ("title", task.getString("title"));
-                        //links.add(link);
-                    }
-                    build.put("links", assoc ("#links" -> assoc (
-                        "#heading" -> assoc(
-                            "level" -> "h3",
-                            "text" -> t("@module administration pages", {"@module" -> otherPluginName})
-                        ),
-                        "#links" -> links
-                    )));
-                }
+            // How to query another plugin
+            Boolean? something = plugin.plugin(otherPluginName)?.providesResource("icon"); // array of assocs
+            if (exists something) {
+
             } 
         }
         return build;

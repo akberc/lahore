@@ -41,50 +41,37 @@ shared abstract class AbstractConfig() satisfies Config {
 shared interface Server {
     shared formal String name;
     shared formal String version;
-    shared formal Path home;
-    shared formal Path config;
-    shared formal Path data;
-    shared formal Boolean booted;
-    shared formal Context defaultContext;
-    shared formal String[] pluginNames;
-    shared formal void addPluginRuntime (Runtime pluginRuntime);
-    shared formal void addSite (Site site);
-    shared formal void removeSite (Site site);
-}
-
-doc("A full top-level Dispatcher that handles all methods")
-shared interface Site {
     
     shared formal String host;
     shared formal Integer port;
-    shared formal String context;
     
-    doc("Site name")
-    shared formal String site;
+    shared formal Path home;
+    shared formal Path temp;
+    shared formal Path data;
     
-    doc("Final configuration for this site and plugin matrix")
-    shared formal Config config;
-    
-    shared formal {String*} enabledPlugins; //direclty enabled and dependent plugins
-    
-    shared formal {HttpMethod*} acceptMethods;
-    
-    shared default {String*} contentTypes => {};
-    
-    shared default {String*} accepts => {};
-    
-    doc("We still need the routes and these may define methods")
-    shared formal {Route *} routes;
-    
-    shared formal Path staticURI;
-    
-    shared formal void siteService(Request request, Response response);
-    
-    shared formal Matcher matcher;
+    shared formal void loadModule(String modName, String modVersion);
+       
+    shared formal Boolean booted;
 }
 
-shared abstract class Matcher() {
-    shared formal Boolean matches(String path);
+"A site that has a context, configures plugins and a theme,
+ and provides resources.
+ Implementations should NOT have any parameters"
+shared interface Site {
+    
+    "Theme"
+    shared formal ThemeConfig themeConfig;
+    
+    "Final configuration for this site and plugin matrix"
+    shared formal {PluginConfig*} pluginsConfig;
+    
+    "Exported Resources"
+    shared formal {Resource *} resources;
+    
+    "Not a route to avoid circular references"
+    shared default Region page404 => Div({Span("Page not Found")});
+    shared default Region page403 => Div({Span("Not Authorized")});
+    shared default Region page500 => Div({Span("Internal Error")});
 }
 
 shared interface Request {
@@ -92,10 +79,15 @@ shared interface Request {
     shared formal HttpMethod method;
     shared formal Map<String, String> parameters;
     shared formal Map<String, String> headers;
+    shared formal Session session;
 }
 
 shared interface Response {
-    shared formal [String, Charset] contentType;
+    shared formal void withContentType([String, Charset] contentType);
     shared formal void withStatus(Integer status);
     shared formal void writeString(String write);
+}
+
+shared interface Session {
+    
 }

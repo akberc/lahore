@@ -1,9 +1,9 @@
 import com.dgwave.lahore.api { ... }
 import com.dgwave.lahore.help { HelpContribution }
 
-shared class MenuPlugin(Runtime runtime) satisfies Plugin & HelpContribution {
+shared class MenuPlugin(plugin) satisfies Plugin & HelpContribution {
 
-    shared actual Runtime plugin = runtime;
+    shared Runtime plugin;
 
     MenuController ctl1 = MenuController();
     MenuEntityForm entForm1 = MenuEntityForm();

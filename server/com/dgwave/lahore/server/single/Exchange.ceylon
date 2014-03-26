@@ -1,6 +1,6 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.net.http.server { CnRequest = Request }
-import ceylon.io.charset { Charset }
+import ceylon.io.charset { Charset, utf8 }
 import ceylon.collection { HashMap }
 import ceylon.net.http { ... }
 
@@ -42,12 +42,14 @@ class DefaultRequest(CnRequest cnReq) satisfies Request {
     }
     
     shared actual String path => cnReq.path;
+    shared actual Session session => nothing;
+    
 }
 
-class DefaultResponse(Request req, contentType) satisfies Response {
+class DefaultResponse(Request req) satisfies Response {
     
     StringBuilder builder = StringBuilder();
-    shared actual [String, Charset] contentType;
+    shared variable [String, Charset] contentType = ["text/html", utf8];
 
     shared variable Integer status = 200;
     
@@ -55,7 +57,9 @@ class DefaultResponse(Request req, contentType) satisfies Response {
         this.status = status;
     }
     
-
+    shared actual void withContentType([String, Charset] contentType) {
+        this.contentType = contentType;
+    }
     
     shared actual void writeString(String write) {
         builder.append(write);

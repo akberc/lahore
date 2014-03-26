@@ -1,6 +1,5 @@
-import ceylon.file {
-    Path
-}
+import ceylon.file { Path }
+import ceylon.language.meta.declaration { ClassDeclaration, Module }
 
 //TODO see how we can inject the context (and config) with  the right scope
 shared alias Primitive => String | Integer | Float | Boolean;
@@ -26,8 +25,8 @@ shared interface Context {
     shared default Entity? entity { return null;} // incoming form or JSON/XML object
 
     "Passing parameters between plugins"
-    shared formal Assocable passed(String string);
-    shared formal Context passing(String string, Assocable arg);
+    shared default Context passing(String string, Assocable arg)  {return this;}
+    shared default Assocable passed(String key)  {return "";} 
 }
 
 shared interface Storage<Element> {
@@ -44,21 +43,20 @@ shared interface Entity satisfies Storable {
     shared formal Integer version;
 }
 
-" Web Context"
-shared interface WebContext satisfies Context {
-    shared formal Theme theme;
-}
+shared abstract class ThemeConfig(shared ClassDeclaration themeClass) extends AbstractConfig() {}
 
-shared interface Theme {
-    shared formal String id;
+shared abstract class PluginConfig(Module mod) extends AbstractConfig() {}
+
+shared abstract class Theme (ThemeConfig config) {
+    shared default String id = "none";
     shared formal Layout layout;
     shared formal Renderer renderer;
     shared formal Binder binder;
     
-    shared formal {Template<Markup>*} templates;
-    shared formal {Style*} styles;
-    shared formal {Script*} scripts;
-    shared formal {Region*} regions;
+    shared default {Template<Markup>*} templates = {};
+    shared default {Style*} styles = {};
+    shared default {Script*} scripts = {};
+    shared default {Region*} regions = {};
     
     shared formal String assemble(TaggedMarkup  tm);
 }

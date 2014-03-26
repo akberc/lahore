@@ -1,6 +1,6 @@
 "This is not a comprehensive HTML reference or producer.  
   It just establishes bare minimum good practices for program-generated HTML"
-shared abstract class Markup(id = null, classes = [], attrs = {}) satisfies Fragment {
+shared abstract class Markup(id = null, classes = [], attrs = {}) extends Fragment() {
 
     shared default {Entry<String, String>*} attrs;
 
