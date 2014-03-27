@@ -1,7 +1,5 @@
 import ceylon.json { JSONObject = Object, JSONArray = Array }
-"""These are logical visible fragments of a page that are rendered to markup by at template.
-   A route handler would look up an entity, break it down to templated content and then the renderer kicks in.
-   """
+
 shared interface Layout {
     shared formal [Integer, Integer] viewPort;
     shared formal [Integer, Integer] grid;
@@ -12,17 +10,39 @@ shared interface Layout {
     shared formal Boolean validate({Region *} blocks);
 }
 
-shared interface Renderer {
-    shared formal TaggedMarkup render({Result*} output);
-}
-
 shared interface Binder {
     shared formal String extractClientScript();
     shared formal String extractClientStyle();
 }
 
+shared abstract class ContentType() of 
+    textCss | applicationJavascript | applicationJson | imagePng | imageJpg | imageIcon {}
+shared object imageJpg extends ContentType() {
+    shared actual String string => "image/jpg";
+}
+
+shared object imagePng extends ContentType() {
+    shared actual String string => "image/png";
+}
+
+shared object imageIcon extends ContentType() {
+    shared actual String string => "image/x-icon";
+}
+
+shared object applicationJavascript extends ContentType() {
+    shared actual String string => "application/javascript";
+}
+
+shared object applicationJson extends ContentType() {
+    shared actual String string => "application/json";
+}
+
+shared object textCss extends ContentType() {
+    shared actual String string => "text/css";
+}
+
 shared abstract class Content() of 
-    JsonObject | JsonArray | Fragment {
+    JsonObject | JsonArray | Paged {
     shared default Boolean cacheable => false;
 }
 
@@ -34,8 +54,19 @@ shared abstract class JsonObject(JSONObject obj) extends Content() {
     
 }
 
-shared abstract class Fragment() extends Content() {
+shared class Attached(name, pathInModule, contentType) {
+    shared default String name;
+    shared default String pathInModule;
+    shared default ContentType contentType; 
+}
+
+shared class Paged (region, top = {}, bottom = {}) extends Content() {
+    shared default {PageTitle|Meta|Style|Script|Attached *} top;
+    shared default Region region;
+    shared default {Style|Script|Attached *} bottom;  
+}
+
+shared abstract class Fragment() {
     shared formal String element;
     shared formal String render();  
 }
-

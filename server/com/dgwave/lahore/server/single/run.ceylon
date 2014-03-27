@@ -1,6 +1,7 @@
 import ceylon.logging { ... }
 import com.dgwave.lahore.api { Config }
 import com.dgwave.lahore.core { Engine }
+import ceylon.time { now }
 
 Logger log = logger(`module com.dgwave.lahore.server.single`);
 
@@ -22,7 +23,7 @@ shared void run() {
             value print = p<=info 
             then process.writeLine 
             else process.writeError;
-            print("[``system.milliseconds``] ``p.string`` ``m``");
+            print("[``now()``] ``p.string`` ``c.name``  ``m``");
             if (exists e) {
                 printStackTrace(e);
             }
@@ -34,7 +35,6 @@ shared void run() {
     log.info("VM Arguments: " + process.arguments.string);
     log.info("Lahore version: 0.1");
     
-    log.info("Using Lahore boot directory: ``lahoreServer.home.string``");
     lahoreServer.boot();
     Engine engine = Engine({lahoreServer}, lahoreServer.siteList.sequence);
     lahoreServer.runWith(engine);	 	

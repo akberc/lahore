@@ -6,6 +6,7 @@ shared abstract class Region({Heading | ContainerMarkup | Region | Span | Input 
 	shared formal [Integer, Integer] gridSpan;	
 }
 
+"Only implementation of region that is not provided by theme"
 shared class Div({Heading | ContainerMarkup | Region | Span | Input | Anchor | P *} children, 
 	String? id = null, String[] classes = empty, {Entry<String, String>*} attrs = {}) extends Region(children, id, classes, attrs) {
 	shared actual [Integer, Integer] gridSpan = [0,0];	

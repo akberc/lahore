@@ -1,5 +1,4 @@
 import com.dgwave.lahore.api { ... }
-import ceylon.collection { HashMap, LinkedList }
 
 shared class SystemThemeConfig(Assoc assoc) extends ThemeConfig(`class SystemTheme`) {
     shared actual String[] stringsWithDefault(String key, String[] defValues) { 
@@ -12,9 +11,21 @@ shared class SystemThemeConfig(Assoc assoc) extends ThemeConfig(`class SystemThe
     }
 }
 
-shared class SystemTheme (SystemThemeConfig config) extends Theme (config) {
+shared class SystemTheme (String siteContext, SystemThemeConfig config) extends Theme (siteContext, config) {
 	
     shared actual String id = "system";
+	
+	shared actual {Attached *} attachments = {
+		Attached("bootstrap-min-css", "css/bootstrap.min.css", textCss),
+		Attached("style1", "css/style.css", textCss),
+		Attached("bg", "img/bg.png", imagePng),
+		Attached("glyphicons-halflings-white", "img/glyphicons-halflings-white.png", imagePng),
+		Attached("glyphicons-halflings", "img/glyphicons-halflings.png", imagePng),
+		Attached("header", "img/header.jpg", imageJpg),
+		Attached("bootstrap-min-js", "js/bootstrap.min.js", applicationJavascript),
+		Attached("jquery-1.10.2-min-js", "js/jquery-1.10.2.min.js", applicationJavascript),
+		Attached("favicon", "favicon.ico", imageIcon)
+	};
     
     "Theme extends HTML5 elements and assigns them a grid range in the theme. Specifies input required for each page render"
     class SystemThemeHeader(H1 heading) extends Header({heading}) {
@@ -30,11 +41,7 @@ shared class SystemTheme (SystemThemeConfig config) extends Theme (config) {
     	shared actual [Integer, Integer] gridSpan = [1,2];
     }
     
-    class SystemThemeMain(String* rendered) extends Main(
-        Div {
-            {Span("\n".join(rendered))};
-        }
-    ) {
+    class SystemThemeMain(Div contained) extends Main(contained) {
     	shared actual [Integer, Integer] gridSpan = [3,10];	
     }
     
@@ -51,33 +58,36 @@ shared class SystemTheme (SystemThemeConfig config) extends Theme (config) {
 	}) {
 		shared actual [Integer, Integer] gridSpan =[1,12];	
 	}
-    
-    "Any custom regions exported by this theme and returnabel by plugins"
-    shared actual {Region*} regions = { };
-    shared actual {Script*} scripts = {};
-    shared actual {Style*} styles = {};
-    
-    shared actual {Template<Markup>*} templates = {};
 
     shared actual JsAngular binder = JsAngular();
     
-    shared actual TwitterBootstrap layout 
-            = TwitterBootstrap();
+    shared actual TwitterBootstrap layout = TwitterBootstrap();
     
-    shared actual HTML5Custom renderer = HTML5Custom();
-    
-    shared actual String assemble(TaggedMarkup tm) {
+    shared actual String assemble(Map<String, String> map, Paged tm) {
         
-        String path = "/admin.site";
+        T[] narrow<T>({Anything *} elems) {
+            return [for (elem in elems) if (is T elem) elem];
+        }
+        
         Html page = Html { 
             attrs = {"lang" -> "en"};
             head = Head {
-                title = PageTitle("Lahore Console");
+                title = narrow<PageTitle>(tm.top).first else PageTitle("Lahore");
+                children = {
                 Meta ({"http-equiv" -> "Content-Type", "content" -> "text/html; charset=UTF-8"}),
-                Link ({"href" -> "``path``/css/bootstrap.min.css", "rel" -> "stylesheet"}),
-                Link ({"href" -> "``path``/css/style.css", "rel" -> "stylesheet"}),
-                for (String->String link in tm[0]) 
-                    if ("css" == link.key) Link({"href" -> link.item, "rel" -> "stylesheet"})
+                Meta ({"charset" -> "utf-8"}),
+                Meta ({"http-equiv" -> "X-UA-Compatible", "content" -> "IE=edge,chrome=1"})
+                    }.chain(narrow<Meta>(tm.top).sequence).chain({
+                Link ({"href" -> "``siteContext``/css/bootstrap.min.css", "rel" -> "stylesheet"}),
+                Link ({"href" -> "``siteContext``/css/style.css", "rel" -> "stylesheet"}),
+                Link ({"href" -> "``siteContext``/favicon.ico", "rel" -> "icon"})
+                    }).chain({
+                        for (att in narrow<Attached>(tm.top))
+                            if (att.contentType == textCss && map.get(att.name) exists) 
+                                Link({"href" -> (map.get(att.name) else ""), "rel" -> "stylesheet"})
+                    }).chain({
+                        // script
+                });
             };
             body = Body {
                 Div { classes=["container"]; {
@@ -91,7 +101,9 @@ shared class SystemTheme (SystemThemeConfig config) extends Theme (config) {
                             startAside
                         },
                         Div { classes=["span8"]; id="content";
-                            SystemThemeMain(for (String mkp in tm[1]) mkp)
+                            (tm.region is Div) 
+                            then SystemThemeMain(narrow<Div>({tm.region}).first else Div{}) 
+                            else tm.region
                         },
                         Div { classes=["span2"]; id="aside2";
                             endAside
@@ -108,7 +120,7 @@ shared class SystemTheme (SystemThemeConfig config) extends Theme (config) {
         };
 
         return page.render();
-    }
+    }  
 }
 
 shared class TwitterBootstrap () satisfies Layout {
@@ -129,76 +141,10 @@ shared class TwitterBootstrap () satisfies Layout {
 
 }
 
-
-shared class HTML5Custom() satisfies Renderer{
-
-    shared actual TaggedMarkup render({Result*} output) {
-
-        HashMap<String, String> attached = HashMap<String, String>();
-        LinkedList<String> markup = LinkedList<String>();
-        
-        Boolean isMeta(Assoc topAssoc) {
-            for (k->i in topAssoc) {
-                if (k.startsWith("#")) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        
-        void processAttached(Assoc? toProcess) {
-            if (exists toProcess) {
-                for (e->f in toProcess) {
-                    if (is Array f) {
-                        for (g in f) {
-                            if (is String g) {
-                                attached.put(e, g);
-                            }
-                        }
-                    }
-                }
-            }		
-        }
-        
-        doc("processing #xxxx -> something ")
-        void processSimpleAssoc(Assoc simple) {
-            for (e in simple.keys) {
-                if (e == "#attached") {
-                    processAttached(simple.getAssoc("#attached"));
-                } else if (e == "#markup") {
-                    if (exists s = simple.getString("#markup")) {
-                        markup.add(s);				
-                    }
-                }
-            }
-        }
-        
-        /**
-         Main initializer
-         */	
-        for (routeOutput in output) {
-            if (is Assoc routeOutput) { 
-                if (isMeta(routeOutput)) { // is it meta or simple?
-                    for (k->i in routeOutput) {
-                        if (is Assoc i) {
-                            processSimpleAssoc(i);
-                        }                    }                } else {
-                    processSimpleAssoc(routeOutput);
-                }
-            } 
-            else if (is Fragment routeOutput) {
-                markup.add(routeOutput.render());
-            }
-        }
-        return [attached, markup];
-    } 
-}
-
 shared class JsAngular() satisfies Binder {
 
     shared actual String extractClientScript() => nothing;
     
     shared actual String extractClientStyle() => nothing;
-    
 
 }

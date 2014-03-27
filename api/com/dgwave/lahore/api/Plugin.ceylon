@@ -1,14 +1,14 @@
 import ceylon.language.meta.declaration { FunctionDeclaration }
 import ceylon.language.meta.model { Method, Function }
-""" Any plugin invocation, direct or hooked, should result in one of these.
-     Null will not be passed through to the caller, but will get an empty result or a false.
+
+
+"""Null will not be passed through to the caller, but will get an empty result or a false.
      Assoc is a generic representation of complex objects.  The framework provides some marshallers for Assoc's.
-     Fragments can be Templated or Markup or a mixture.  
+     Fragments can be Templated or Markup or a mixture.
+      
      Entities are not directly rendered by the framework, but must pass through a Route handler 
      or pass through a theme-provided template to be 'fragment'-ized."""
-shared alias Result => Null | Assoc | {Fragment+} | {Entity+};
-
-shared alias Contributed => [String, Result];
+shared alias Contributed => [String, Fragment | Assoc | Div];
 
 "A simple route"
 shared interface Route {
@@ -21,8 +21,8 @@ shared interface Route {
     
     shared formal String path;
     
-    shared formal Method<Anything,Result,[Context]>
-            | Function<Result,[Context, Runtime]> produce;
+    shared formal Method<Anything, Content?, [Context]>
+            | Function<Content?,[Context, Runtime]> produce;
 }
 
 "Interface to be implemented by all plugins that
@@ -68,7 +68,7 @@ shared interface Plugin {
 shared interface Runtime {
     shared formal PluginInfo info;
     shared formal Boolean dependedBy (String pluginId);
-    "The [[Result]] portion of Contributed can also be null"
+    "The content portion of Contributed can also be null"
     shared formal Contributed? contributionFrom (String pluginId, FunctionDeclaration contrib, Context c);
     shared formal {Contributed*} allContributions (FunctionDeclaration contrib, Context c);
     shared formal {String*} contributors;
@@ -76,21 +76,4 @@ shared interface Runtime {
     
     shared formal Boolean another(String pluginId);
     shared formal PluginInfo? plugin(String pluginId);
-}
-
-"A controller is like a plugin extension
- and an implementation can be invoked with the Runtime object as a parameter,
- for example [[ctl1 = ControllerOne(Runtime plugin)]]"
-
-shared interface Controller {
-    shared formal Plugin plugin;
-}
-
-shared interface Service {
-    shared formal String id;
-}
-
-shared interface Task satisfies Service{
-    shared formal String message;
-    shared formal variable Boolean done;
 }

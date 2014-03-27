@@ -1,5 +1,5 @@
-import ceylon.file { Path }
 import ceylon.io.charset { Charset }
+import ceylon.io.buffer { ByteBuffer }
 
 shared interface Storable {
     shared formal void load(Assoc assoc);
@@ -45,10 +45,6 @@ shared interface Server {
     shared formal String host;
     shared formal Integer port;
     
-    shared formal Path home;
-    shared formal Path temp;
-    shared formal Path data;
-    
     shared formal void loadModule(String modName, String modVersion);
        
     shared formal Boolean booted;
@@ -83,9 +79,11 @@ shared interface Request {
 }
 
 shared interface Response {
+    shared formal void addHeader(String name, String* vals);
     shared formal void withContentType([String, Charset] contentType);
     shared formal void withStatus(Integer status);
     shared formal void writeString(String write);
+    shared formal void writeByteBuffer(ByteBuffer item);
 }
 
 shared interface Session {

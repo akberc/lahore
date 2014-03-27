@@ -50,11 +50,11 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
                 log.info("Internal register Plugin : ``pluginId``");
                 if (exists pluginName,
                     exists pluginDesc) {
-                        pluginInfos.put(pluginId, PluginInfoImpl {
-                            moduleName = cm.name;
-                            moduleVersion = cm.version;						  	
+                        pluginInfos.put(pluginId, PluginInfoImpl {						  	
                             id = pluginId;
-                            name = pluginName; 
+                            name = pluginName;
+                            moduleName = cm.name;
+                            moduleVersion = cm.version;
                             description = pluginDesc;
                             pluginClass = pluginClass; 
                             contributionInterface = contribInterface; 
@@ -220,16 +220,5 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
                 if (exists pf = pluginFinals.get(lf)) 
                     for (r in pf.routes.sequence) r
         };
-    }
-    
-    shared {Assoc*} getAdminTasks(String pluginId) { 
-        return {}; 
-    }
-    
-    shared ClassDeclaration? themeClass (String themeId) {
-        if (exists themeCls = themes.get(themeId)) {
-            return themeCls;
-        }
-        return null;
     }  
 }

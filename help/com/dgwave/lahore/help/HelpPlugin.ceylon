@@ -6,7 +6,7 @@ shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContri
     shared Runtime plugin;
 
     "Contributes to help"
-    shared actual Result help(Context c)  {
+    shared actual Div? help(Context c)  {
         String path = c.passed("path").string; //String[]? args;
         variable Li optional = Li("");
         if (plugin.another("node")) {
@@ -14,7 +14,7 @@ shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContri
             {"@content" -> url("node/add")}));
         }
         if (path == "admin/help") {
-            return {
+            return Div{
                 P(t("Follow these steps to set up and start using your website:")),
                 Ol({
                     Li(t("<strong>Configure your website</strong> Once logged in, visit the <a href=\"@admin\">administration section</a>, where you can <a href=\"@config\">customize and configure</a> all aspects of your website.", 
@@ -31,7 +31,7 @@ shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContri
             };
         }
         else if (path == "admin/help#help") {
-            return  {
+            return  Div{
                 H3(t("About")),
                 P(t("The Help module provides <a href=\"@help-page\">Help reference pages</a> and context-sensitive advice to guide you through the use and configuration of modules. It is a starting point for the online <a href=\"@handbook\">Drupal handbooks</a>. The handbooks contain more extensive and up-to-date information, are annotated with user-contributed comments, and serve as the definitive reference point for all Drupal documentation. For more information, see the online handbook entry for the <a href=\"@help\">Help module</a>.", 
                 {"@help" -> "http://drupal.org/documentation/modules/help/", "@handbook" -> "http://drupal.org/documentation", "@help-page" -> url("admin/help")})),
@@ -49,18 +49,18 @@ shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContri
     }		
 
     "Contributes to menu deletion"
-    shared actual Result menuDelete(Menu menu) {
-        return null;
+    shared actual Assoc menuDelete(Menu menu) {
+        return assoc();
     }
 
     "Contributes to menu insertion"	
-    shared actual Result menuInsert(Menu menu)  {
-        return null;
+    shared actual Assoc menuInsert(Menu menu)  {
+        return assoc();
     }
 
     "Contributes to menu updates"
-    shared actual Result menuUpdate(Menu menu)  {
-        return null;
+    shared actual Assoc menuUpdate(Menu menu)  {
+        return assoc();
     }
 
     "Contributes to template pre-processing for blocks"
@@ -71,6 +71,6 @@ shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContri
 
 shared interface HelpContribution satisfies Contribution {
 
-    shared default Result help(Context c) {return null;}
+    shared default Div? help(Context c) {return null;}
 
 }

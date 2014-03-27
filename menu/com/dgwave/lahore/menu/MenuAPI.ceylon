@@ -1,13 +1,13 @@
-import com.dgwave.lahore.api { Contribution, Result }
+import com.dgwave.lahore.api { Contribution, Assoc }
 
 
 shared interface MenuContribution satisfies Contribution{
 
-    shared default Result menuInsert(Menu menu) {return null;}
+    shared formal Assoc menuInsert(Menu menu);
 
-    shared default Result menuUpdate(Menu menu) {return null;}
+    shared formal Assoc menuUpdate(Menu menu);
 
-    shared default Result menuDelete(Menu menu) {return null;}
+    shared formal Assoc menuDelete(Menu menu);
 }
 
 shared class Menu() {

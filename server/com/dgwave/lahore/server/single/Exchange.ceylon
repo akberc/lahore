@@ -1,8 +1,10 @@
 import com.dgwave.lahore.api { ... }
-import ceylon.net.http.server { CnRequest = Request }
-import ceylon.io.charset { Charset, utf8 }
+import ceylon.net.http.server { CnRequest = Request, CnResponse = Response }
+import ceylon.io.charset { Charset }
 import ceylon.collection { HashMap }
-import ceylon.net.http { ... }
+import ceylon.net.http { CnHeader = Header, ... }
+import ceylon.io.buffer { ByteBuffer }
+import ceylon.net.http.server.endpoints { serveStaticFile }
 
 class DefaultRequest(CnRequest cnReq) satisfies Request {
 
@@ -42,28 +44,28 @@ class DefaultRequest(CnRequest cnReq) satisfies Request {
     }
     
     shared actual String path => cnReq.path;
-    shared actual Session session => nothing;
-    
+    shared actual Session session => nothing; 
 }
 
-class DefaultResponse(Request req) satisfies Response {
-    
-    StringBuilder builder = StringBuilder();
-    shared variable [String, Charset] contentType = ["text/html", utf8];
-
-    shared variable Integer status = 200;
-    
-    shared actual void withStatus(Integer status) {
-        this.status = status;
+class DefaultResponse(Request req, CnResponse cnRes) satisfies Response {
+ 
+    shared actual void addHeader(String name, String* vals) {
+        cnRes.addHeader(CnHeader(name, *vals));
     }
     
-    shared actual void withContentType([String, Charset] contentType) {
-        this.contentType = contentType;
+    shared actual void withStatus(Integer status) {
+        cnRes.responseStatus = status;
+    }
+    
+    shared actual void withContentType([String, Charset] cType) {
+        cnRes.addHeader(contentType(cType[0], cType[1]));
     }
     
     shared actual void writeString(String write) {
-        builder.append(write);
+        cnRes.writeString(write);
     }
-    
-    shared actual String string => builder.string;
+  
+    shared actual void writeByteBuffer(ByteBuffer buffer) {
+        cnRes.writeByteBuffer(buffer);
+    }
 }

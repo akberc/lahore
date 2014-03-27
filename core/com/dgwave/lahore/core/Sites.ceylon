@@ -1,6 +1,11 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.collection { HashMap }
+import ceylon.file { FileRes = Resource, parseURI, File }
 import ceylon.language.meta.model { Method, Function }
+import ceylon.io.charset { utf8 }
+import ceylon.language.meta { modules }
+import ceylon.io.buffer { ByteBuffer, newByteBuffer }
+import ceylon.io { newOpenFile }
 
 class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {	
     
@@ -12,10 +17,6 @@ class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {
             }
         }
         return null;		
-    }
-    
-    shared actual default String staticResourcePath(String type, String name) {
-        return "/" + name + "." + type;
     }
     
     shared actual String? contextParam(String key) {
@@ -91,8 +92,8 @@ class WebRoute (pluginId, name, methods, String routePath, produce, String? rout
     shared actual String name;
     shared actual Methods[] methods;
     shared actual String path = routePath;
-    shared actual Method<Anything,Result,[Context]>
-            |Function<Result,[Context, Runtime]> produce;
+    shared actual Method<Anything,Content?,[Context]>
+            |Function<Content?,[Context, Runtime]> produce;
     shared actual String string = 
             "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
 }
@@ -102,10 +103,35 @@ class SiteRuntime(site, context, theme) {
     String context;
     Theme theme;
     shared variable Plugins? plugins = null;
-    {WebRoute*} routes = plugins?.routesFor(empty, true) else {};
+    {WebRoute*} routes { 
+        return plugins?.routesFor(empty, true) else {};
+    }
     
     "Web request/response service"
     shared void siteService (Request req, Response resp) {
+        
+        Boolean isAttachment(Request req) => 
+                req.path.endsWith("css") || 
+                req.path.endsWith("js") || 
+                req.path.endsWith("ico");
+        
+        if (isAttachment(req)) {
+            value got = attachmentCache.get(req.path);
+            if (exists got) {
+                log.debug("Cache hit for ``req.path``");
+                resp.withContentType([got[0].string, utf8]);
+                resp.addHeader("Cache-Control", "max-age=3600");
+                value item = got[1];
+                switch(item)
+                case (is String) {
+                    resp.writeString(item);
+                }
+                case (is ByteBuffer) {
+                    resp.writeByteBuffer(item);
+                }
+                return;
+            }
+        }
            
         // create a new context
         DefaultWebContext dc = DefaultWebContext(); 
@@ -127,19 +153,61 @@ class SiteRuntime(site, context, theme) {
             }
         }
         
-        if (exists r = rt) {	
-            PluginImpl? plugin = plugins?.plugin(r.pluginId);
-            if (exists plugin) {						
-                Result p = plugin.produceRoute(dc, r);
-                if (exists p, is Assoc | Fragment p) {
-                    resp.writeString(theme.assemble(theme.renderer.render({p})));
-                } else {
-                    resp.withStatus(500);
-                    resp.writeString(site.page500.render());
+        if (exists r = rt,	
+            exists plugin = plugins?.plugin(r.pluginId),						
+            exists content = plugin.produceRoute(dc, r)) {
+            
+            switch(content) 
+            case (is Paged) {
+                value keyMap = HashMap<String, String>();
+                for (tb in content.top.chain(content.bottom)) {
+                    if (is Attached tb) {
+                        
+                        String key = context + "/" + plugin.plugin.id + "/" 
+                            + String(tb.pathInModule.skippingWhile((Character c) =>"/\\".contains(c)));
+                        
+                        String path = plugin.plugin.info.moduleName.replace(".", "/") + "/" 
+                                + String(tb.pathInModule.skippingWhile((Character c) =>"/\\".contains(c)));
+                        
+                        Resource? resource = modules.find(plugin.plugin.info.moduleName, plugin.plugin.info.moduleVersion)
+                            ?.resourceByPath(path);
+
+                        if (exists resource) {
+                            value contentType = tb.contentType;
+                            switch (contentType)
+                            case (textCss, applicationJavascript, applicationJson) {
+                                String? stuff = resource.textContent();
+                                if (exists stuff) {
+                                    attachmentCache.put(key, [tb.contentType, stuff]);
+                                    keyMap.put(tb.name, key);
+                                }
+                            }
+                            case (imageIcon, imageJpg, imagePng) {
+                                FileRes fRes = parseURI(resource.uri).resource;
+                                if (is File fRes) {
+                                    value openFile = newOpenFile(fRes);
+                                    variable Integer available = openFile.size;
+                                    ByteBuffer byteBuffer = newByteBuffer(available);
+                                    openFile.read(byteBuffer);
+                                    byteBuffer.flip();
+                                    attachmentCache.put(key, [tb.contentType, byteBuffer]);
+                                    keyMap.put(tb.name, key);
+                                } else {
+                                    log.warn("Binary resource file ``fRes.path`` could no be loaded");   
+                                }
+                            }
+
+                        } else {
+                            log.warn("Resource ``tb.name`` could not be found in module ``plugin.plugin.info.moduleName``");
+                        }
+                    }
                 }
+                resp.withContentType(["text/html", utf8]);
+                resp.writeString(theme.assemble(keyMap, content));
+
             } else {
-                resp.withStatus(500);
-                resp.writeString(site.page500.render());				
+                resp.withContentType([applicationJson.string, utf8]);
+                resp.writeString(content.string);				
             }
         } else {
             if (req.path.equals(context) || req.path.equals(context + "/")) {
@@ -151,7 +219,7 @@ class SiteRuntime(site, context, theme) {
         }
     }
     
-    doc("Internal method to find an applicable route given a path")		
+    "Internal method to find an applicable route given a path"		
     WebRoute? findApplicableRoute(String method, String path, DefaultWebContext dc) {
         log.debug("Looking for route: " + method + " " + path);
         for (r in routes) {

@@ -4,12 +4,14 @@ offline=false
 
 [lahore]
 environment=DEV
-debugLevel=3
+logPriority=DEBUG
+site=com.dgwave.lahore.system/0.1
 
-[lahore "plugins"]
-preload=com.dgwave.lahore.system/0.1
-preload=com.dgwave.lahore.help/0.1
-preload=com.dgwave.lahore.menu/0.1
-
-[repositories]
-lookup=D:\\work\\wildfly-8.0.0.Final\\modules\\system\\layers\\base
+[compiler]
+source=.\\system
+source=.\\help
+source=.\\server
+source=.\\core
+source=.\\menu
+source=.\\api
+resource=.\\resources\\help

@@ -13,27 +13,27 @@ shared class MenuPlugin(plugin) satisfies Plugin & HelpContribution {
     methods(httpGET)
     route("menu_settings", "/admin/structure/menu/settings")
     permission("administer menu")
-    shared Result menuSettings(Context c) => ctl1.menuSettings(c);
+    shared Content? menuSettings(Context c) => ctl1.menuSettings(c);
 
     methods(httpGET)
     route("menu_link_reset", "admin/structure/menu/item/{menu_link}/reset")
     permission("administer menu")
-    shared Result menuLinkReset(Context c) => ctl1.menuLinkReset(c);
+    shared Content? menuLinkReset(Context c) => ctl1.menuLinkReset(c);
 
     methods(httpGET)
     route("menu_link_delete", "admin/structure/menu/item/{menu_link}/delete")
     permission("_access_menu_delete_link: 'TRUE'")
-    shared Result menuLink_delete(Context c) => entForm1.menuLink_delete(c);
+    shared Content? menuLink_delete(Context c) => entForm1.menuLink_delete(c);
 
     methods(httpGET)
     route("menu_delete_menu", "admin/structure/menu/manage/{menu}/delete")
     permission("_access_menu_delete_link: 'TRUE'")
-    shared Result menu_delete(Context c) => entForm1.menu_delete(c);
+    shared Content? menu_delete(Context c) => entForm1.menu_delete(c);
 
-    shared actual Result help(Context c) {
+    shared actual Div? help(Context c) {
         String path = c.passed("path").string;
         if (path == "admin/help#menu") {
-            return {
+            return Div {
                 H3(t("About")),
                 P( t("The Menu module provides an interface for managing menus. A menu is a hierarchical collection of links, which can be within or external to the site, generally used for navigation. Each menu is rendered in a block that can be enabled and positioned through the <a href=\"@blocks\">Blocks administration page</a>. You can view and manage menus on the <a href=\"@menus\">Menus administration page</a>. For more information, see the online handbook entry for the <a href=\"@menu\">Menu module</a>.", 
                 {"@blocks" -> url("admin/structure/block"), "@menus" -> url("admin/structure/menu"), "@menu" -> "http://drupal.org/documentation/modules/menu/"}
@@ -52,23 +52,23 @@ shared class MenuPlugin(plugin) satisfies Plugin & HelpContribution {
                     )
                     )
                 }
-            };
+            }; 
         }
         else if (path == "admin/structure/menu/add") {
-            return {
+            return Div {
                 P(t("You can enable the newly-created block for this menu on the <a href=\"@blocks\">Blocks administration page</a>.", 
                 {"@blocks" -> url("admin/structure/block")})
                 )
-            };
+            }; 
         }
         
         if (path == "admin/structure/menu") { 
             if (plugin.another("block")) {
-                return {
+                return Div {
                     P(t("Each menu has a corresponding block that is managed on the <a href=\"@blocks\">Blocks administration page</a>.", 
                     {"@blocks" -> url("admin/structure/block")})
                     )
-                };
+                }; 
             }
         }
         

@@ -6,3 +6,12 @@ offline=false
 environment=DEV
 logPriority=DEBUG
 site=com.dgwave.lahore.system/0.1
+
+[compiler]
+source=.\\system
+source=.\\help
+source=.\\server
+source=.\\core
+source=.\\menu
+source=.\\api
+resource=.\\resources

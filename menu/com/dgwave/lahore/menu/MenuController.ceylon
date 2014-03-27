@@ -4,11 +4,11 @@ class MenuController() {
 
     shared late Plugin plugin;
 
-    shared Result menuSettings(Context c) {
+    shared Content? menuSettings(Context c) {
         return null;
     }
 
-    shared Result menuLinkReset(Context c) {
+    shared Content? menuLinkReset(Context c) {
         return null;
     }
 }

@@ -4,73 +4,58 @@ import com.dgwave.lahore.api { ... }
 methods(httpGET)
 route("help_main", "admin/help")
 permission("access administration pages")
-shared Result helpMain(Context c, Runtime plugin) { 
-    Assoc output = assoc(
-        "#attached" -> assoc(
-            "css" -> array(c.staticResourcePath("plugin", "help").string + "/style.css")
-        ), 
-        "#markup" -> "<h2>" + t("Help topics") + "</h2><p>" 
-                + t("Help is available on the following items:") + "</p>"  + helpLinksAsList(c, plugin)
-    );
-    
-    return result(output);
+shared Content helpMain(Context c, Runtime plugin) {
+    return Paged {
+        top = {Attached("style1", "style.css", textCss)};
+        region = Div {
+            H2(t("Help topics")),
+            P(t("Help is available on the following items:")),
+            helpLinksAsList(c, plugin)
+        };
+    };
 }
 
 "Prints a page listing general help for a module."  
 methods(httpGET)
 route("help_page", "admin/help/{name}")
 permission("access administration pages")
-shared Result helpPage(Context c, Runtime plugin) {
+shared Content? helpPage(Context c, Runtime plugin) {
     String? otherPluginName = c.pathParam("{name}");
     if (exists otherPluginName) {
-        Assoc build = assoc();
         if (plugin.isContributedToBy(otherPluginName)) {
             
             value temp = plugin.contributionFrom(otherPluginName, 
                 `function HelpContribution.help`, c.passing("path", "admin/help#" + otherPluginName));
             
-            if (exists temp) {
-                build.put("top", assoc ("#markup" -> temp.string) );  
+            if (exists temp, is Div contr = temp[1]) {
+                return Paged { region = contr;};  
+            } else {
+                return Paged { region = Div {
+                    Span(t("No help is available for module %module.", {"%module" -> otherPluginName}))
+                    };
+                };
             }
-            else {
-                build.put("top", assoc ("#markup" -> t("No help is available for module %module.", {"%module" -> otherPluginName})));
-            }
-            
-            // How to query another plugin
-            Boolean? something = plugin.plugin(otherPluginName)?.providesResource("icon"); // array of assocs
-            if (exists something) {
-
-            } 
         }
-        return build;
+        
+        // How to query another plugin
+        Boolean? something = plugin.plugin(otherPluginName)?.providesResource("icon"); // array of assocs
+        if (exists something) {
+            
+        }
     }
     return null;
 }
 
 "Provides a formatted list of available help topics."
-String helpLinksAsList(Context c, Runtime plugin) {
-    variable String output = "";
+Div helpLinksAsList(Context c, Runtime plugin) {
 
     {String*} impls = plugin.contributors;
 
-    //asort(impls);
-
-    // Output pretty four-column list.
-    value cnt = impls.size;
-    Integer brk = ceil(cnt/4.0).integer;
-    output = "<div class=\"clearfix\"><div class=\"help-items\"><ul>";
-
-    variable Integer i = 0;
-    variable String cls = "";
-    for (mod in impls) {
-        output = output + "<li>" + l(mod, "admin/help/" + mod) + "</li>";
-        if ((i + 1) % brk == 0 && (i + 1) != cnt) {
-            if (i + 1 == brk * 3) {cls = " help-items-last";} else {cls = "";}
-            output = output + "</ul></div><div class=\"help-items\" ``cls`` ><ul>";
-        }
-        i++;
-    }
-    output = output + "</ul></div></div>";
-
-    return output;
+    return Div { classes = ["clearfix"];
+            Div { classes = ["help-items"];
+                Ul {
+                    for (mod in impls) Li(l(mod, "admin/help/" + mod)) 
+                }
+            }
+        };
 }

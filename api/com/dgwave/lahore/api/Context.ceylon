@@ -1,27 +1,16 @@
 import ceylon.file { Path }
 import ceylon.language.meta.declaration { ClassDeclaration, Module }
+import ceylon.language.meta { typeLiteral, type }
 
-//TODO see how we can inject the context (and config) with  the right scope
+"Valid values in [[Assoc]] and [[Array]]"
 shared alias Primitive => String | Integer | Float | Boolean;
-shared alias TaggedMarkup => [Map<String, String>, List<String>];
-
-shared abstract class Scope() of 
-    globalScope | pluginScope | siteScope | sessionScope | conversationScope | requestScope | callScope {}
-
-shared object globalScope extends Scope() { shared actual String string = "global";}
-shared object pluginScope extends Scope() { shared actual String string = "plugin";}
-shared object siteScope extends Scope() { shared actual String string = "site";}
-shared object sessionScope extends Scope() { shared actual String string = "session";}	
-shared object conversationScope extends Scope() { shared actual String string = "conversation";}	
-shared object requestScope extends Scope() { shared actual String string = "request";}	
-shared object callScope extends Scope() { shared actual String string = "call";}		
 
 " This should be injectable into plugin providers"
 shared interface Context {
     shared default String? contextParam(String name) { return null;}
     shared default String? queryParam(String name) { return null;}	
     shared default String? pathParam(String placeHolder) { return null;}	
-    shared formal String staticResourcePath(String type, String name);	
+	
     shared default Entity? entity { return null;} // incoming form or JSON/XML object
 
     "Passing parameters between plugins"
@@ -47,16 +36,24 @@ shared abstract class ThemeConfig(shared ClassDeclaration themeClass) extends Ab
 
 shared abstract class PluginConfig(Module mod) extends AbstractConfig() {}
 
-shared abstract class Theme (ThemeConfig config) {
-    shared default String id = "none";
+shared abstract class Theme (String siteContext, ThemeConfig config) {
+    shared formal String id;
+    
+    shared formal {Attached *} attachments;
+    
     shared formal Layout layout;
-    shared formal Renderer renderer;
+
     shared formal Binder binder;
+
+    "Any custom regions exported by this theme and returnable by plugins"
+    shared default Region? newRegion<T>() given T satisfies Region {
+        value it = typeLiteral<T>();
+        value et = type(it).extendedType;
+        if (exists et, is Region rg = et.declaration.instantiate()) {
+            return rg;
+        }
+        return null;
+    }
     
-    shared default {Template<Markup>*} templates = {};
-    shared default {Style*} styles = {};
-    shared default {Script*} scripts = {};
-    shared default {Region*} regions = {};
-    
-    shared formal String assemble(TaggedMarkup  tm);
+    shared formal String assemble(Map<String, String> keyMap, Paged  tm);
 }

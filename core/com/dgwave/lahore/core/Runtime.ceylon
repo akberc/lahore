@@ -32,15 +32,15 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     shared actual Boolean providesResource (String resourceId) => resourcesList.contains(resourceId);
     
     shared PluginInfoImpl withDependsOn (String[] dependsOnList=[]) {
-        return PluginInfoImpl(this.id, this.name, this.description, 
-        this.moduleName, this.moduleVersion, this.pluginClass, this.contributionInterface, this.contributeList, dependsOnList, 
-        this.dependedByList, this.servicesList, this.resourcesList);
+        return PluginInfoImpl(this.id, this.name, this.moduleName, this.moduleVersion, this.description, 
+            this.pluginClass, this.contributionInterface, this.contributeList, dependsOnList, 
+            this.dependedByList, this.servicesList, this.resourcesList);
     }
     
     shared PluginInfoImpl withDependedBy (String[] dependedByList=[]) {
-        return PluginInfoImpl(this.id, this.name, this.description, 
-        this.moduleName, this.moduleVersion, this.pluginClass, this.contributionInterface, this.contributeList, this.dependsOnList, 
-        dependedByList, this.servicesList, this.resourcesList);	}
+        return PluginInfoImpl(this.id, this.name, this.moduleName, this.moduleVersion, this.description, 
+            this.pluginClass, this.contributionInterface, this.contributeList, this.dependsOnList, 
+            dependedByList, this.servicesList, this.resourcesList);	}
     }
     
     "Provides run-time implementations. PluginInfo can be for any plugin.
@@ -71,22 +71,22 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }
         
         shared actual {Contributed*} allContributions(FunctionDeclaration contrib, Context c) {
-            return { for (id in contributions.keys) contributionFrom(id, contrib,c)};
+            return { for (id in contributions.keys) if (exists cf = contributionFrom(id, contrib,c)) cf};
         }
         
-        shared actual Contributed contributionFrom(String pluginId, FunctionDeclaration contrib, Context c) {
+        shared actual Contributed? contributionFrom(String pluginId, FunctionDeclaration contrib, Context c) {
             try {
                 if (exists cb = contributions.get(pluginId)) {
 
                     value p = contrib.memberInvoke(cb, [], c);
-                    if (is Result p) {
+                    if (is Fragment | Assoc p) {
                         return [pluginId, p];
                     }
                 } 
             } catch (Exception e) {
                 log.warn ("Contribution was not obtained from ``pluginId`` ", e);
             }
-            return [pluginId,null];
+            return null;
         }
         
         shared actual {String*} contributors {
@@ -137,8 +137,8 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         for ( a in pluginInfo.pluginClass.containingPackage
                 .annotatedMembers<FunctionDeclaration, RouteAnnotation>()) {
             if (exists ra = a.annotations<RouteAnnotation>().first) {
-                Function<Result,[Context, Runtime]>method = 
-                        a.apply<Result, [Context, Runtime]>();
+                Function<Content?,[Context, Runtime]>method = 
+                        a.apply<Content?, [Context, Runtime]>();
     
                 WebRoute webRoute = WebRoute(pluginInfo.id, ra.routeName, a.annotations<Methods>(), 
                     ra.routePath, method, a.annotations<Permission>().first?.permission);
@@ -162,11 +162,11 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }
          */
         
-        shared Result produceRoute(Context c, WebRoute r) {
-            if ( is Method<Anything,Result,[Context]> producer = r.produce) {
+        shared Content? produceRoute(Context c, WebRoute r) {
+            if ( is Method<Anything,Content?,[Context]> producer = r.produce) {
                 return producer(pluginInstance)(c); 
             }
-            else if ( is Function<Result,[Context, Runtime]> producer = r.produce) { 
+            else if ( is Function<Content?,[Context, Runtime]> producer = r.produce) { 
                 return producer(c, plugin);                    
             } else {
                 return null;

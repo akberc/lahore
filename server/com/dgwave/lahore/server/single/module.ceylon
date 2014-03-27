@@ -8,6 +8,7 @@ module com.dgwave.lahore.server.single "0.1" {
     import ceylon.io "1.0.0";
     import ceylon.collection "1.0.0";
     import ceylon.logging "1.0.0";
+    import ceylon.time "1.0.0";
 
     import java.base "7";
     
