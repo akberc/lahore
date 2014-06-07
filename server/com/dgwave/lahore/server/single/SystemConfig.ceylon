@@ -1,6 +1,7 @@
 import com.dgwave.lahore.api { AbstractConfig }
 import com.redhat.ceylon.common.config { CeylonConfig }
 import java.lang { ObjectArray, JavaString = String }
+import ceylon.collection { ArrayList }
 
 shared class SystemConfig() extends AbstractConfig() {
     
@@ -9,10 +10,10 @@ shared class SystemConfig() extends AbstractConfig() {
     shared actual String[] stringsWithDefault(String key, String[] defValues) {
         ObjectArray<JavaString>? vs = config.getOptionValues(key);
         if (exists vs) {
-            value sb = SequenceBuilder<String>();
+            value sb = ArrayList<String>();
             variable Integer i = 0;
             while (i < vs.size){
-                sb.append(vs.get(i).string);
+                sb.add(vs.get(i).string);
                 i++;
             }
             return sb.sequence;

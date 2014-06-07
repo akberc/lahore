@@ -164,10 +164,10 @@ class SiteRuntime(site, context, theme) {
                     if (is Attached tb) {
                         
                         String key = context + "/" + plugin.plugin.id + "/" 
-                            + String(tb.pathInModule.skippingWhile((Character c) =>"/\\".contains(c)));
+                            + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
                         
                         String path = plugin.plugin.info.moduleName.replace(".", "/") + "/" 
-                                + String(tb.pathInModule.skippingWhile((Character c) =>"/\\".contains(c)));
+                                + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
                         
                         Resource? resource = modules.find(plugin.plugin.info.moduleName, plugin.plugin.info.moduleVersion)
                             ?.resourceByPath(path);

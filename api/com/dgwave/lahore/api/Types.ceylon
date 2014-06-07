@@ -58,5 +58,7 @@ shared class Array({Assocable*} values = {}) extends LinkedList<Assocable>(value
         p.printArray(this);
         return p.string;
     }
+    
+    shared actual Boolean empty => super.empty;    
 }
 

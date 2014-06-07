@@ -117,7 +117,7 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
             value pluginName = lp.split((Character ch) => ch == '/');
             
             if (exists cmName = pluginName.first,
-                exists cmVersion = pluginName.skipping(1).first,
+                exists cmVersion = pluginName.skip(1).first,
                 exists cm = modules.find(cmName, cmVersion),
                 exists rootPkg = cm.findPackage(cmName),
                 exists pluginId = cm.annotations<Id>().first?.id ) {

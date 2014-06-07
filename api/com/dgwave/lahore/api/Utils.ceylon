@@ -113,11 +113,15 @@ shared abstract class Printer(Boolean pretty = false){
         print("\"");
     }
 
-    "Prints an `Integer|Float`"
-    shared default void printNumber(Number n){
+    "Prints an `Integer`"
+    shared default void printInteger(Integer n){
         print(n.string);
     }
 
+    "Prints a `Float`"
+    shared default void printFloat(Float f){
+        print(f.string);
+    }
     "Prints a `Boolean`"
     shared default void printBoolean(Boolean v){
         print(v.string);
@@ -135,10 +139,10 @@ shared abstract class Printer(Boolean pretty = false){
             printString(val);
         }
         case (is Integer){
-            printNumber(val);
+            printInteger(val);
         }
         case (is Float){
-            printNumber(val);
+            printFloat(val);
         }
         case (is Boolean){
             printBoolean(val);

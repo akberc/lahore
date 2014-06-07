@@ -14,8 +14,11 @@ shared class FileStorage( configDir) satisfies Storage<Config> {
         Resource r = configDir.childResource(relativePath);
         switch(r)
         case (is File) {
-            if (relativePath.endsWith("yml") || relativePath.endsWith("yaml")) {
+            if (relativePath.endsWith("json")) {
                 return parseJsonAsConfig(readFileAsString(r));	
+            } else if (relativePath.endsWith("yml") || relativePath.endsWith("yaml")) {
+               // TODO return parseYamlAsConfig(readFileAsString(r));
+               return null;	
             } else {
                 log.error("Configuration file ``relativePath`` is not supported");
                 return null;
@@ -53,7 +56,7 @@ shared class FileStorage( configDir) satisfies Storage<Config> {
                 sb.append("\n");
             }
         } finally {
-            reader.close(null);
+            reader.close();
         }
         return sb.string;
     }	

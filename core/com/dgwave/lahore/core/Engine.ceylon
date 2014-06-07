@@ -16,7 +16,7 @@ shared class Engine(lahoreServers, sites) {
         value pluginName = site.split((Character ch) => ch == '/');
         
         if (exists cmName = pluginName.first,
-            exists cmVersion = pluginName.skipping(1).first,
+            exists cmVersion = pluginName.skip(1).first,
             exists cm = modules.find(cmName, cmVersion),
             exists pluginId = cm.annotations<Id>().first?.id,
             exists siteContext = cm.annotations<SiteContext>().first) {
@@ -40,10 +40,10 @@ shared class Engine(lahoreServers, sites) {
                                         
                                         for (tb in theme.attachments) {
                                             String key = siteContext.context + "/"  
-                                                    + String(tb.pathInModule.skippingWhile((Character c) =>"/\\".contains(c)));
+                                                    + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
                                             
                                             String path = themeConfig.themeClass.containingModule.name.replace(".", "/") + "/" 
-                                                + String(tb.pathInModule.skippingWhile((Character c) =>"/\\".contains(c)));
+                                                + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
                                             
                                             Resource? resource = themeConfig.themeClass.containingModule
                                                     .resourceByPath(path);

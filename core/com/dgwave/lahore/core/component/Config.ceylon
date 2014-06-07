@@ -4,39 +4,35 @@ import ceylon.logging { logger, Logger }
 
 Logger log = logger(`package com.dgwave.lahore.core.component`);
 
-shared class AssocConfig(assoc = Assoc()) extends AbstractConfig() {
-    variable Assoc assoc;
-    
-    shared actual String[] stringsWithDefault(String key, String[] defValues) {
-        if (exists a = assoc.getArray(key)) {
-            return filterStrings(a);
-        } else {
-            return defValues;
-        }
-    }
-    
-    String[] filterStrings(Array a) { 
-        value sb = SequenceBuilder<String>(); 
-        for (ae in a) {
-            if (is String ae) {
-                sb.append(ae);
-            }
-        }
-        return sb.sequence;
-    }	
+class JsonConfig(Assoc assoc) extends AssocConfig(assoc) {
+
 }
 
 shared Config? parseJsonAsConfig(String jsonString) {
     
     try {
-        JsonObject jsonObj = parse(jsonString);
-        Assoc assoc = Assoc();
-        for (an in jsonObj) {
-            if (is Assocable another = an.item) {
-                assoc.put(an.key, another);
+        JsonObject? jsonObj {
+            value parsed = parse(jsonString);
+            if (is JsonObject parsed)  {
+                return parsed;
+            } else {
+                return null;
             }
         }
-        return AssocConfig(assoc);
+        
+        Assoc assoc = Assoc();
+        if (exists it = jsonObj) {
+	        for (an in it) {
+	            if (is Assocable another = an.item) {
+	                assoc.put(an.key, another);
+	            }
+	        }
+	    } else {
+	        return null;
+	    }
+	    
+        return JsonConfig(assoc);
+	    
     } catch (Exception e) {
         return null;
     } 

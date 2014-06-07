@@ -1,5 +1,6 @@
 import ceylon.io.charset { Charset }
 import ceylon.io.buffer { ByteBuffer }
+import ceylon.collection { ArrayList }
 
 shared interface Storable {
     shared formal void load(Assoc assoc);
@@ -36,6 +37,27 @@ shared abstract class AbstractConfig() satisfies Config {
     }					
 }
 
+shared abstract class AssocConfig(assoc = Assoc()) extends AbstractConfig() {
+	Assoc assoc;
+	
+	shared actual String[] stringsWithDefault(String key, String[] defValues) {
+		if (exists a = assoc.getArray(key)) {
+			return filterStrings(a);
+		} else {
+			return defValues;
+		}
+	}
+	
+	String[] filterStrings(Array a) { 
+		value sb = ArrayList<String>(); 
+		for (ae in a) {
+			if (is String ae) {
+				sb.add(ae);
+			}
+		}
+		return sb.sequence;
+	}	
+}
 
 "A server container that presents system services to Core"
 shared interface Server {
