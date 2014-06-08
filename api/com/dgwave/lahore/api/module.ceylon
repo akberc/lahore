@@ -1,8 +1,8 @@
 by ("Akber Choudhry")
 doc ("Lahore port to Ceylon.")
-license ("Apache 2.0 License - Copyright 2013 Digiwave Systems Ltd. (http://www.dgwave.com/)")
+license ("Apache 2.0 License - Copyright 2013-2014 Digiwave Systems Ltd. (http://www.dgwave.com/)")
 
-module com.dgwave.lahore.api "0.1" {
+module com.dgwave.lahore.api "0.2" {
 
     shared import ceylon.collection "1.1.0";
     shared import ceylon.file "1.1.0";
