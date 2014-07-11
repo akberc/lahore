@@ -4,7 +4,6 @@ import ceylon.io.charset { Charset }
 import ceylon.collection { HashMap }
 import ceylon.net.http { CnHeader = Header, ... }
 import ceylon.io.buffer { ByteBuffer }
-import ceylon.net.http.server.endpoints { serveStaticFile }
 
 class DefaultRequest(CnRequest cnReq) satisfies Request {
 

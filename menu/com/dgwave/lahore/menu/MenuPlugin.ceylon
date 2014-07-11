@@ -3,7 +3,7 @@ import com.dgwave.lahore.help { HelpContribution }
 
 shared class MenuPlugin(plugin) satisfies Plugin & HelpContribution {
 
-    shared Runtime plugin;
+    shared PluginRuntime plugin;
 
     MenuController ctl1 = MenuController();
     MenuEntityForm entForm1 = MenuEntityForm();

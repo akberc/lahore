@@ -13,7 +13,7 @@ module com.dgwave.lahore.server.single "0.2" {
     import java.base "7";
     
     import com.redhat.ceylon.common "1.1.0";
-    import org.jboss.modules "1.1.3.GA";
+    import org.jboss.modules "1.3.3.Final";
     
     shared import com.dgwave.lahore.api "0.2";
     import com.dgwave.lahore.core "0.2";

@@ -1,10 +1,10 @@
-import com.dgwave.lahore.api {id, description, name}
+import com.dgwave.lahore.api {plugin, routes, description, name}
 
 doc ("Allows administrators to customize the site navigation menu.")
 license ("Apache Software License 2.0 - Copyright 2013-2014 Digiwave Systems Ltd.")
 by ("Akber Choudhry")
 
-id("menu")
+plugin(routes)
 name("Menu")
 description("Allows administrators to customize the site navigation menu.")
 module com.dgwave.lahore.menu "0.2" {

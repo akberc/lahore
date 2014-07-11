@@ -3,7 +3,7 @@ import com.dgwave.lahore.menu { Menu, MenuContribution }
 
 shared class HelpPlugin(plugin) satisfies Plugin & MenuContribution & HelpContribution & TemplateContribution {
 
-    shared Runtime plugin;
+    shared PluginRuntime plugin;
 
     "Contributes to help"
     shared actual Div? help(Context c)  {

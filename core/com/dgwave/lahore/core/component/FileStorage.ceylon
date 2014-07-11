@@ -1,87 +1,49 @@
-import com.dgwave.lahore.api { Storage, Config, Primitive }
-import ceylon.file { File, Resource, Directory, Path, Nil, Link }
+import ceylon.file { ... }
+import ceylon.language.meta.declaration { Module }
+import com.dgwave.lahore.api { Storage, Locator, fileScheme, Config, Data, Preference, Store }
 
-shared class FileStorage( configDir) satisfies Storage<Config> {
-
-    Directory configDir;
-
-    shared actual Boolean append(String relativePath, Config config){
-        return false;
+shared class FileStorage(localDir) satisfies Storage {
+    Directory localDir;
+    shared actual Locator base = Locator(fileScheme, localDir.path.uriString);
+    
+    shared actual Store<Config> configStore(String context, Module mod) {
+        return FileConfigStore(localDir.path.childPath("config").childPath(context), context, mod);
     }
+    
+    shared actual Store<Data> dataStore(String context) {
+        return FileDataStore(localDir.path.childPath("data").childPath(context));
+    }
+    
+    shared actual Store<Preference> preferenceStore() {
+        return FilePreferenceStore(localDir.path.childPath("prefs")); 
+    }
+}
 
-    doc("Think of path as a table and keys of a row in the table")
-    shared actual Config? load(String relativePath, {Primitive+} uniqueKey)  {
-        Resource r = configDir.childResource(relativePath);
+abstract class FileStore(Path basePath) {
+    shared Locator baseLocator = Locator(fileScheme, basePath.uriString);
+    
+    shared Boolean appendEntriesToExistingFile(Path fullPath, {Entry<String,String>+} entries) {
+        Resource r = fullPath.resource;
         switch(r)
-        case (is File) {
-            if (relativePath.endsWith("json")) {
-                return parseJsonAsConfig(readFileAsString(r));	
-            } else if (relativePath.endsWith("yml") || relativePath.endsWith("yaml")) {
-               // TODO return parseYamlAsConfig(readFileAsString(r));
-               return null;	
-            } else {
-                log.error("Configuration file ``relativePath`` is not supported");
-                return null;
-            }
-        } else {
-            log.error("Configuration file ``relativePath`` does not exist!");
-            return null;
-        }		
-    }
-
-    shared actual {Config*} loadAllVersions(String relativePath, {Primitive+} uniqueKey) {
-        return {};
-    }
-
-    shared actual {Config*} find (String relativePath, String query) {
-        return {};
-    }
-
-    shared actual Config? remove(String relativePath, {Primitive+} uniquKey) {
-        return null;
-    }
-
-    shared actual Boolean save(String relativePath, Config config) {
-        return false;
-    }
-
-    shared actual Path basePath => configDir.path;
-
-    shared String readFileAsString(File file) {  
-        value sb = StringBuilder();
-        value reader = file.Reader();
-        try {
-            while(exists line = reader.readLine()) {
-                sb.append(line);
-                sb.append("\n");
-            }
-        } finally {
-            reader.close();
-        }
-        return sb.string;
-    }	
-}
-
-doc("This is a convenience method. Responsibility of the client to keep or discard the storage")
-throws(`class Exception`)
-shared FileStorage fileStorage(Path path) {
-    Resource dir = path.resource;
-    try {
-        switch(dir)
-        case (is Nil) {
-            dir.createDirectory();
-            return fileStorage(dir.path);
-        }
-        case(is Directory) {
-            return FileStorage(dir);
+        case (is Directory | Link | Nil) {
+            log.error("Filestore trying to append entries: ``fullPath`` is not a file");
+            return false;
         }
         case (is File) {
-            throw Exception("File exists at location ``path.string``. It should be a directory");
+            File.Appender appender = r.Appender("UTF-8");
+            for (entry in entries) {
+                if (entry.key.contains('=') || entry.item.contains('=')) {
+                    log.error("Filestore key or value should not contain '='");
+                    return false;
+                }
+            }
+            
+            for (entry in entries) {
+                appender.writeLine(entry.key + "=" + entry.item);
+            }
+            appender.close();
+            return true;
         }
-        case (is Link) {
-            return fileStorage(dir.linkedPath);
-        }
-    } catch (Exception ex) {
-        throw ex;
     }
 }
+

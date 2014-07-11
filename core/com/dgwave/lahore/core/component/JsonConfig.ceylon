@@ -4,11 +4,13 @@ import ceylon.logging { logger, Logger }
 
 Logger log = logger(`package com.dgwave.lahore.core.component`);
 
-class JsonConfig(Assoc assoc) extends AssocConfig(assoc) {
-
+class JsonConfig(String key, Assoc assoc) extends AssocConfig(assoc) {
+    shared actual {Primitive+} uniqueKey => {key};
+    
+    shared actual Integer version => 0;
 }
 
-shared Config? parseJsonAsConfig(String jsonString) {
+shared Config? parseJsonAsConfig(String key, String jsonString) {
     
     try {
         JsonObject? jsonObj {
@@ -31,7 +33,7 @@ shared Config? parseJsonAsConfig(String jsonString) {
 	        return null;
 	    }
 	    
-        return JsonConfig(assoc);
+        return JsonConfig(key, assoc);
 	    
     } catch (Exception e) {
         return null;

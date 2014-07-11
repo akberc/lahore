@@ -1,11 +1,18 @@
 import ceylon.language.meta.declaration { ClassDeclaration, FunctionDeclaration, Module }
 
-"The annotation class for [[id]]."
-shared final annotation class Id(shared String id)
-        satisfies OptionalAnnotation<Id, Module> {}
+"The annotation class for [[plugin]]."
+shared abstract class PluginType()
+        of themes | routes | sites {}
+shared object themes extends PluginType() { shared actual String string = "themes"; }
+shared object routes extends PluginType() { shared actual String string = "routes"; }
+shared object sites extends PluginType() { shared actual String string = "sites"; }
 
-"Annotation to specify Lahore module short id" 
-shared annotation Id id(String id) => Id(id);
+"The annotation class for [[plugin]]."
+shared final annotation class Type(shared PluginType pluginType)
+        satisfies OptionalAnnotation<Type, Module> {}
+
+"Annotation to specify Lahore module plugin type" 
+shared annotation Type plugin(PluginType pluginType) => Type(pluginType);
 
 "The annotation class for [[name]]."
 shared final annotation class Name(shared String name, shared String locale)

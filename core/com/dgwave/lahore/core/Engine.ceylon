@@ -5,6 +5,7 @@ import ceylon.language.meta.declaration { ClassDeclaration, Package }
 import ceylon.file { FileRes=Resource, File, parseURI }
 import ceylon.io { newOpenFile }
 import ceylon.io.buffer { ByteBuffer, newByteBuffer }
+import com.dgwave.lahore.core.component { attachmentCache }
 
 Logger log = logger(`module com.dgwave.lahore.core`);
 
@@ -18,7 +19,7 @@ shared class Engine(lahoreServers, sites) {
         if (exists cmName = pluginName.first,
             exists cmVersion = pluginName.skip(1).first,
             exists cm = modules.find(cmName, cmVersion),
-            exists pluginId = cm.annotations<Id>().first?.id,
+            exists pluginType = cm.annotations<Type>().first?.pluginType,
             exists siteContext = cm.annotations<SiteContext>().first) {
             for (Package pk in cm.members) {
                 if (cm.name == pk.name) {
@@ -33,12 +34,11 @@ shared class Engine(lahoreServers, sites) {
                                     ThemeConfig themeConfig = originalSite.themeConfig;
 
                                     value theme = themeConfig.themeClass.instantiate([], siteContext.context, themeConfig);
-                                    // value model = 
-                                    // themeConfig.themeClass.classApply<Theme<ThemeConfig>,[ThemeConfig]>();
-                                    // value theme = classModel.apply(themeConfig);                 
+              
                                     if (is Theme theme) {
-                                        
+                                        log.trace("Theme found ``theme.id``, now searching for attachments");
                                         for (tb in theme.attachments) {
+                                            log.trace("Theme attachment found ``theme.id``, ``tb.string``");
                                             String key = siteContext.context + "/"  
                                                     + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
                                             
@@ -78,10 +78,8 @@ shared class Engine(lahoreServers, sites) {
                                         value pluginNames = [cm.name + "/" + cm.version].chain(
                                             [for (d in cm.dependencies) d.name + "/" + d.version]
                                         );
-// TODO remove after Ceylon language bug #315 is fixed
-                                        for (d in cm.dependencies) {
-                                            lahoreServers.first.loadModule(d.name, d.version);
-                                        }
+                                        log.trace("Site ``site`` uses modules: ``pluginNames``");
+
                                         value runtimeSite = SiteRuntime(originalSite, siteContext.context, 
                                             theme);
                                                                                

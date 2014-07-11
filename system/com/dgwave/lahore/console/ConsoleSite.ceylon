@@ -1,6 +1,7 @@
 import com.dgwave.lahore.api { ... }
+import com.dgwave.lahore.system_theme { SystemThemeConfig }
 
-shared class AdminSite() satisfies Site {
+shared class ConsoleSite() satisfies Site {
      
     shared actual {Resource*} resources = {
          

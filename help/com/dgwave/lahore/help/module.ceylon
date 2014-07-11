@@ -1,10 +1,10 @@
-import com.dgwave.lahore.api { id, description, name }
+import com.dgwave.lahore.api { plugin, routes, description, name }
 
 doc ("Manages the display of online help.")
 license ("Apache Software License 2.0 - Copyright 2013-2014 Digiwave Systems Ltd.")
 by ("Akber Choudhry")
 
-id("help")
+plugin(routes)
 name("Help")
 description("Manages the display of online help.")
 module com.dgwave.lahore.help "0.2" {

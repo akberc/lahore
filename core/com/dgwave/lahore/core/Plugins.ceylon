@@ -36,9 +36,10 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
     "Register the official id, name, description as loaded"
     void register(Module cm, ClassDeclaration pluginClass, String[] contribImpls, InterfaceDeclaration? contribInterface) {
         
-        String? pluginId = cm.annotations<Id>().first?.id;
+        value pluginType = cm.annotations<Type>().first?.pluginType;
         
-        if (exists pluginId) {
+        if (exists pluginType) {
+            String pluginId = cm.name;
             String? pluginName = cm.annotations<Name>().empty
                 then  pluginId else cm.annotations<Name>().first?.name ;
             String? pluginDesc = cm.annotations<Description>().empty
@@ -98,14 +99,14 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
     void reCalculateDependencies() {
         for (info in pluginInfos) {
             PluginInfoImpl s = info.item;
-            String[] deps = parseDependencies(s.moduleName, s.moduleVersion, s.id, HashSet<String>()).sequence;
+            String[] deps = parseDependencies(s.moduleName, s.moduleVersion, s.id, HashSet<String>()).sequence();
             pluginInfos.put(info.key, s.withDependsOn(deps));
         }
 
         for (info in pluginInfos) {
             value depBy = pluginInfos.collect<String>((String->PluginInfo inf) => 
                     inf.item.dependsOn(info.key) then inf.key else "~NO~")
-                    .filter((String e) => e != "~NO~").sequence;
+                    .filter((String e) => e != "~NO~").sequence();
             PluginInfoImpl r = info.item;
             pluginInfos.put(info.key, r.withDependedBy(depBy));
         }		
@@ -120,7 +121,7 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
                 exists cmVersion = pluginName.skip(1).first,
                 exists cm = modules.find(cmName, cmVersion),
                 exists rootPkg = cm.findPackage(cmName),
-                exists pluginId = cm.annotations<Id>().first?.id ) {
+                exists pluginType = cm.annotations<Type>().first?.pluginType ) {
                 for (Package pk in cm.members) {
                     if (cm.name == pk.name) {
                         variable ClassDeclaration? pc = null;
@@ -153,7 +154,7 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
                                     }
                                 }
                             }
-                            register(cm, pluginClass, impls.sequence, hc);
+                            register(cm, pluginClass, impls.sequence(), hc);
                         }
                     }
                 }
@@ -167,7 +168,7 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
     reCalculateDependencies();
     
     for (inf in pluginInfos) {
-        PluginImpl impl = PluginImpl(pluginScope, inf.item, siteRuntime);
+        PluginImpl impl = PluginImpl(inf.item, siteRuntime);
         pluginFinals.put(inf.key, impl);
     }
     
@@ -208,7 +209,7 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
         //startPlugin(pluginId);
     }
     
-    shared String[] list = pluginInfos.keys.sequence;
+    shared String[] list = pluginInfos.keys.sequence();
     
     shared {WebRoute*} routesFor({String*} sitePlugins, Boolean all) { 
         
@@ -218,7 +219,7 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
         return { 
             for (lf in lookFor) 
                 if (exists pf = pluginFinals.get(lf)) 
-                    for (r in pf.routes.sequence) r
+                    for (r in pf.routes.sequence()) r
         };
     }  
 }

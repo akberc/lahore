@@ -4,7 +4,7 @@ import com.dgwave.lahore.api { ... }
 methods(httpGET)
 route("help_main", "admin/help")
 permission("access administration pages")
-shared Content helpMain(Context c, Runtime plugin) {
+shared Content helpMain(Context c, PluginRuntime plugin) {
     return Paged {
         top = {Attached("style1", "style.css", textCss)};
         region = Div {
@@ -19,7 +19,7 @@ shared Content helpMain(Context c, Runtime plugin) {
 methods(httpGET)
 route("help_page", "admin/help/{name}")
 permission("access administration pages")
-shared Content? helpPage(Context c, Runtime plugin) {
+shared Content? helpPage(Context c, PluginRuntime plugin) {
     String? otherPluginName = c.pathParam("{name}");
     if (exists otherPluginName) {
         if (plugin.isContributedToBy(otherPluginName)) {
@@ -47,7 +47,7 @@ shared Content? helpPage(Context c, Runtime plugin) {
 }
 
 "Provides a formatted list of available help topics."
-Div helpLinksAsList(Context c, Runtime plugin) {
+Div helpLinksAsList(Context c, PluginRuntime plugin) {
 
     {String*} impls = plugin.contributors;
 

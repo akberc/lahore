@@ -1,4 +1,3 @@
-import ceylon.file { Path }
 import ceylon.language.meta.declaration { ClassDeclaration, Module }
 import ceylon.language.meta { typeLiteral, type }
 
@@ -11,30 +10,23 @@ shared interface Context {
     shared default String? queryParam(String name) { return null;}	
     shared default String? pathParam(String placeHolder) { return null;}	
 	
-    shared default Entity? entity { return null;} // incoming form or JSON/XML object
+    shared default Data? data { return null;} // incoming form or JSON/XML object
 
     "Passing parameters between plugins"
     shared default Context passing(String string, Assocable arg)  {return this;}
     shared default Assocable passed(String key)  {return "";} 
 }
 
-shared interface Storage<Element> {
-    shared formal Element? load(String relativePath, {Primitive+} uniqueKey = {"*"});	
-    shared formal {Element*} loadAllVersions(String relativePath, {Primitive+} uniquKey);
-    shared formal Element? remove(String relativePath, {Primitive+} uniquKey);
-    shared formal Boolean save(String relativePath, Element elem);
-    shared formal {Element*} find(String relativePath, String query);
-    shared formal Boolean append(String relativePath, Element elem);
-    shared formal Path basePath;}
 
-shared interface Entity satisfies Storable {
-    shared formal {Primitive+} uniqueKey;
-    shared formal Integer version;
+
+shared abstract class ThemeConfig(shared ClassDeclaration themeClass) 
+        extends ModuleConfig(themeClass.containingModule) {
+
 }
 
-shared abstract class ThemeConfig(shared ClassDeclaration themeClass) extends AbstractConfig() {}
-
-shared abstract class PluginConfig(Module mod) extends AbstractConfig() {}
+shared abstract class PluginConfig(Module mod) extends ModuleConfig(mod) {
+    
+}
 
 shared abstract class Theme (String siteContext, ThemeConfig config) {
     shared formal String id;

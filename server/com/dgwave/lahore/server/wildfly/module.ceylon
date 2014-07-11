@@ -7,5 +7,5 @@ module com.dgwave.lahore.server.wildfly "0.2" {
     shared import java.base "7";
     import com.dgwave.lahore.core "0.2";
     import ceylon.logging "1.1.0";
-    import org.jboss.modules "1.1.3.GA";
+    import org.jboss.modules "1.3.3.Final";
 }

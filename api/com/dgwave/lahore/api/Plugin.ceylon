@@ -22,7 +22,7 @@ shared interface Route {
     shared formal String path;
     
     shared formal Method<Anything, Content?, [Context]>
-            | Function<Content?,[Context, Runtime]> produce;
+            | Function<Content?,[Context, PluginRuntime]> produce;
 }
 
 "Interface to be implemented by all plugins that
@@ -43,6 +43,8 @@ shared interface PluginInfo {
     "Only provides yes/no to a query and should not allow any deeper instrospection"
     shared formal Boolean contributes (String contributionId);
     shared formal Boolean providesResource (String resourceName);
+    
+    //TODO provide service by API interface
     shared formal Boolean providesService (String serviceName);	
     shared formal Boolean dependsOn (String pluginId);
     //TODO do we need hasRoute here, or in runtime, or leave it at the site level?
@@ -65,7 +67,7 @@ shared interface Plugin {
 
 "How other plugins are interacting with this plugin 
      and which the subject plugin can only know about at run-time"
-shared interface Runtime {
+shared interface PluginRuntime {
     shared formal PluginInfo info;
     shared formal Boolean dependedBy (String pluginId);
     "The content portion of Contributed can also be null"

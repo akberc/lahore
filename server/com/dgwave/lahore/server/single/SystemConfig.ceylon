@@ -1,9 +1,12 @@
-import com.dgwave.lahore.api { AbstractConfig }
+import com.dgwave.lahore.api { Config, Primitive }
 import com.redhat.ceylon.common.config { CeylonConfig }
 import java.lang { ObjectArray, JavaString = String }
 import ceylon.collection { ArrayList }
 
-shared class SystemConfig() extends AbstractConfig() {
+shared class SystemConfig() extends Config() {
+    shared actual {Primitive+} uniqueKey => {"ceylon"};
+    
+    shared actual Integer version => 0;
     
     CeylonConfig config = CeylonConfig().get();
     
@@ -16,7 +19,7 @@ shared class SystemConfig() extends AbstractConfig() {
                 sb.add(vs.get(i).string);
                 i++;
             }
-            return sb.sequence;
+            return sb.sequence();
         } else {
             value oa = ObjectArray<JavaString>(defValues.size);
             variable Integer i = 0;
@@ -27,5 +30,5 @@ shared class SystemConfig() extends AbstractConfig() {
             config.setOptionValues(key, oa);
             return defValues;
         }
-    }	
+    }   	
 }

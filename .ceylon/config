@@ -4,8 +4,8 @@ offline=false
 
 [lahore]
 environment=DEV
-logPriority=DEBUG
-site=com.dgwave.lahore.system/0.1
+logPriority=FINE
+site=com.dgwave.lahore.console/0.2
 
 [compiler]
 source=.\\system

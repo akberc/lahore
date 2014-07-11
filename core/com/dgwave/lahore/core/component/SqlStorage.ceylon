@@ -1,21 +1,34 @@
-import com.dgwave.lahore.api { Storage, Entity, Primitive }
+import com.dgwave.lahore.api { Storage, Data, Primitive, Store, Locator, Config, Preference }
 import ceylon.file { Path}
+import ceylon.language.meta.declaration { Module }
 
-shared class SqlStorage(Path sqlPath) satisfies Storage<Entity> {
+shared class SqlStorage(Path sqlPath) satisfies Storage {
+    shared actual Locator base => nothing;
+    
+    shared actual Store<Config> configStore(String context, Module mod) => nothing;
+    
+    shared actual Store<Data> dataStore(String context) => nothing;
+    
+    shared actual Store<Preference> preferenceStore() => nothing;
+}
 
-    shared actual Boolean append(String relativePath, Entity elem) {return false;}
+shared class SqlDataStore(Locator sqlPath) satisfies Store<Data> {
 
-    shared actual Entity? load(String relativePath, {Primitive+} uniqueKey) {return null;}
+    shared actual Boolean append(Data storable) {return false;}
 
-    shared actual {Entity*} loadAllVersions(String relativePath, {Primitive+} uniqueKey) {return {};}
+    shared actual Data? load({Primitive+} uniqueKey, Integer version) {return null;}
 
-    shared actual {Entity*} find (String relativePath, String query) {return {};}
+    shared actual {Data*} loadAll({Primitive+} uniqueKey) {return {};}
 
-    shared actual Entity? remove(String relativePath, {Primitive+} uniquKey) {return null;}
+    shared actual {Data*} find (String relativePath) {return {};}
 
-    shared actual Boolean save(String relativePath, Entity elem) {return false;}
+    shared actual Data? remove({Primitive+} uniqueKey, Integer version) {return null;}
 
-    shared actual Path basePath = sqlPath;
+    shared actual Boolean save(Data storable) {return false;}
+
+    shared actual Locator base = sqlPath;
+    shared actual String relativePath => nothing;
+    
 }
 
 

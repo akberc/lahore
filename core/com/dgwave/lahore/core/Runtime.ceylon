@@ -45,7 +45,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
     
     "Provides run-time implementations. PluginInfo can be for any plugin.
      Here the info represents the plugin itself, hence the duplication"
-    class PluginRuntimeImpl (info, site) satisfies Runtime & PluginInfo {
+    class PluginRuntimeImpl (info, site) satisfies PluginRuntime & PluginInfo {
         
         shared actual PluginInfoImpl info;
         SiteRuntime site;
@@ -98,7 +98,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }
         
         shared actual Boolean another(String pluginId) {
-            if (exists pi = site.plugins?.info(pluginId)) {
+            if (exists pi = site.plugins.info(pluginId)) {
                 return true;
             } else {
                 return false;
@@ -106,14 +106,13 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         }
         
         shared actual PluginInfo? plugin(String pluginId) {
-            return site.plugins?.info(pluginId);
+            return site.plugins.info(pluginId);
         }
     }
     
     doc("The runtime representation of a plugin")
-    class PluginImpl (scope, pluginInfo, site) satisfies Plugin {
+    class PluginImpl (pluginInfo, site) satisfies Plugin {
         
-        Scope scope;
         PluginInfoImpl pluginInfo;
         SiteRuntime site;
         
@@ -124,7 +123,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         shared Plugin? pluginInstance {    
             // instantiate class and interface from info and inject the run-time
             value instantiable = pluginInfo.pluginClass.apply<Plugin>();
-            if (is Class<Anything, [Runtime]> instantiable) {
+            if (is Class<Anything, [PluginRuntime]> instantiable) {
                 value instance = instantiable(plugin);
                 if (is Plugin instance) {
                     return instance;
@@ -137,8 +136,8 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
         for ( a in pluginInfo.pluginClass.containingPackage
                 .annotatedMembers<FunctionDeclaration, RouteAnnotation>()) {
             if (exists ra = a.annotations<RouteAnnotation>().first) {
-                Function<Content?,[Context, Runtime]>method = 
-                        a.apply<Content?, [Context, Runtime]>();
+                Function<Content?,[Context, PluginRuntime]>method = 
+                        a.apply<Content?, [Context, PluginRuntime]>();
     
                 WebRoute webRoute = WebRoute(pluginInfo.id, ra.routeName, a.annotations<Methods>(), 
                     ra.routePath, method, a.annotations<Permission>().first?.permission);
@@ -166,7 +165,7 @@ class PluginInfoImpl (id, name, moduleName, moduleVersion, description,
             if ( is Method<Anything,Content?,[Context]> producer = r.produce) {
                 return producer(pluginInstance)(c); 
             }
-            else if ( is Function<Content?,[Context, Runtime]> producer = r.produce) { 
+            else if ( is Function<Content?,[Context, PluginRuntime]> producer = r.produce) { 
                 return producer(c, plugin);                    
             } else {
                 return null;

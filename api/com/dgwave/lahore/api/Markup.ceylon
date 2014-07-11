@@ -217,7 +217,7 @@ String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={})
     }
 
     shared Button button(String content, Boolean enabled = true, String? id = null, String* classes) {
-        return Button ("", content, "", "", enabled, id, classes.sequence, {} );
+        return Button ("", content, "", "", enabled, id, classes.sequence(), {} );
     }
 
     shared Anchor a(String href, String content, {Entry<String, String>*} other={}, String? id = null, String[] classes = empty) {

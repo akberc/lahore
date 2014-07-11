@@ -6,13 +6,14 @@ import ceylon.io.charset { utf8 }
 import ceylon.language.meta { modules }
 import ceylon.io.buffer { ByteBuffer, newByteBuffer }
 import ceylon.io { newOpenFile }
+import com.dgwave.lahore.core.component { attachmentCache }
 
 class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {	
     
-    shared actual Entity? entity {
+    shared actual Data? data {
         Object? o = get("entity");
         if (exists o) {
-            if (is Entity o) {
+            if (is Data o) {
                 return o;
             }
         }
@@ -93,7 +94,7 @@ class WebRoute (pluginId, name, methods, String routePath, produce, String? rout
     shared actual Methods[] methods;
     shared actual String path = routePath;
     shared actual Method<Anything,Content?,[Context]>
-            |Function<Content?,[Context, Runtime]> produce;
+            |Function<Content?,[Context, PluginRuntime]> produce;
     shared actual String string = 
             "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
 }
@@ -102,9 +103,10 @@ class SiteRuntime(site, context, theme) {
     shared Site site;
     String context;
     Theme theme;
-    shared variable Plugins? plugins = null;
+    shared late Plugins plugins;
+    
     {WebRoute*} routes { 
-        return plugins?.routesFor(empty, true) else {};
+        return plugins.routesFor(empty, true);
     }
     
     "Web request/response service"
@@ -154,7 +156,7 @@ class SiteRuntime(site, context, theme) {
         }
         
         if (exists r = rt,	
-            exists plugin = plugins?.plugin(r.pluginId),						
+            exists plugin = plugins.plugin(r.pluginId),						
             exists content = plugin.produceRoute(dc, r)) {
             
             switch(content) 

@@ -1,15 +1,7 @@
 import com.dgwave.lahore.api { ... }
+import ceylon.logging { logger, Logger }
 
-shared class SystemThemeConfig(Assoc assoc) extends ThemeConfig(`class SystemTheme`) {
-    shared actual String[] stringsWithDefault(String key, String[] defValues) { 
-        if (exists arr = assoc.getArray(key)) {
-            return [for (a in arr) if (is String a) a];
-        } else if (exists a = assoc.getString(key)) {
-            return [a];
-        }
-        return [];
-    }
-}
+Logger log = logger(`module com.dgwave.lahore.system_theme`);
 
 shared class SystemTheme (String siteContext, SystemThemeConfig config) extends Theme (siteContext, config) {
 	
@@ -77,7 +69,7 @@ shared class SystemTheme (String siteContext, SystemThemeConfig config) extends 
                 Meta ({"http-equiv" -> "Content-Type", "content" -> "text/html; charset=UTF-8"}),
                 Meta ({"charset" -> "utf-8"}),
                 Meta ({"http-equiv" -> "X-UA-Compatible", "content" -> "IE=edge,chrome=1"})
-                    }.chain(narrow<Meta>(tm.top).sequence).chain({
+                    }.chain(narrow<Meta>(tm.top).sequence()).chain({
                 Link ({"href" -> "``siteContext``/css/bootstrap.min.css", "rel" -> "stylesheet"}),
                 Link ({"href" -> "``siteContext``/css/style.css", "rel" -> "stylesheet"}),
                 Link ({"href" -> "``siteContext``/favicon.ico", "rel" -> "icon"})
