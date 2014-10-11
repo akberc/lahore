@@ -1,6 +1,6 @@
 import ceylon.file { ... }
 import ceylon.language.meta.declaration { Module }
-import com.dgwave.lahore.api { Storage, Locator, fileScheme, Config, Data, Preference, Store }
+import com.dgwave.lahore.api { Storage, Locator, fileScheme, Config, Document, Preference, Store }
 
 shared class FileStorage(localDir) satisfies Storage {
     Directory localDir;
@@ -10,7 +10,7 @@ shared class FileStorage(localDir) satisfies Storage {
         return FileConfigStore(localDir.path.childPath("config").childPath(context), context, mod);
     }
     
-    shared actual Store<Data> dataStore(String context) {
+    shared actual Store<Document> dataStore(String context) {
         return FileDataStore(localDir.path.childPath("data").childPath(context));
     }
     

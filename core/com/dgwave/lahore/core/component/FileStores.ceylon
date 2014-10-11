@@ -1,23 +1,39 @@
-import com.dgwave.lahore.api { Locator, Config, Primitive, Data, Preference, Store }
-import ceylon.file { Path, Directory, Link, Nil, Resource, File }
-import ceylon.language.meta.declaration { Module }
-import ceylon.collection { StringBuilder }
+import ceylon.file {
+    Path,
+    Directory,
+    Link,
+    Nil,
+    Resource,
+    File
+}
+import ceylon.language.meta.declaration {
+    Module
+}
 
-class FileDataStore(Path path) extends FileStore(path) satisfies Store<Data> {
+import com.dgwave.lahore.api {
+    Locator,
+    Config,
+    Primitive,
+    Document,
+    Preference,
+    Store
+}
+
+class FileDataStore(Path path) extends FileStore(path) satisfies Store<Document> {
     shared actual Locator base => baseLocator;
-    shared actual Boolean append(Data storable) => nothing;
+    shared actual Boolean append(Document storable) => nothing;
     
-    shared actual {Data*} find(String query) => nothing;
+    shared actual {Document*} find(String query) => nothing;
     
-    shared actual Data? load({Primitive+} uniqueKey, Integer version) => nothing;
+    shared actual Document? load({Primitive+} uniqueKey, Integer version) => nothing;
     
-    shared actual {Data*} loadAll({Primitive+} uniqueKey) => nothing;
+    shared actual {Document*} loadAll({Primitive+} uniqueKey) => nothing;
     
     shared actual String relativePath => nothing;
     
-    shared actual Data? remove({Primitive+} uniqueKey, Integer version) => nothing;
+    shared actual Document? remove({Primitive+} uniqueKey, Integer version) => nothing;
     
-    shared actual Boolean save(Data storable) => nothing;
+    shared actual Boolean save(Document storable) => nothing;
     
 }
 

@@ -1,14 +1,29 @@
-import ceylon.net.http.server { ... }
-import ceylon.io { SocketAddress }
-import com.dgwave.lahore.api { LahoreServer = Server }
-import ceylon.collection { LinkedList }
-import org.jboss.modules { 
-	Module { ceylonModuleLoader=callerModuleLoader},
-	ModuleIdentifier { createModuleIdentifier=create},
-	ModuleClassLoader
+import ceylon.collection {
+    LinkedList
+}
+import ceylon.io {
+    SocketAddress
+}
+import ceylon.net.http.server {
+    ...
 }
 
-import com.dgwave.lahore.core { Engine }
+import com.dgwave.lahore.api {
+    LahoreServer=Server
+}
+import com.dgwave.lahore.core {
+    Engine
+}
+
+import org.jboss.modules {
+    Module {
+        ceylonModuleLoader=callerModuleLoader
+    },
+    ModuleIdentifier {
+        createModuleIdentifier=create
+    },
+    ModuleClassLoader
+}
 
 doc ("The Lahore instance")
 object lahoreServer satisfies LahoreServer {
@@ -26,7 +41,7 @@ object lahoreServer satisfies LahoreServer {
   	    ModuleIdentifier modIdentifier = createModuleIdentifier(modName, modVersion);
   	    Module mod = ceylonModuleLoader.loadModule(modIdentifier);
   	    ModuleClassLoader modClassLoader = mod.classLoader;
-  	    modClassLoader.loadClass(modName+".module_");
+  	    modClassLoader.loadClass(modName+".$module_");
     }
   
     shared LinkedList<String> siteList = LinkedList<String>();

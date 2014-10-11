@@ -1,9 +1,24 @@
-import com.dgwave.lahore.api { ... }
-import ceylon.net.http.server { CnRequest = Request, CnResponse = Response }
-import ceylon.io.charset { Charset }
-import ceylon.collection { HashMap }
-import ceylon.net.http { CnHeader = Header, ... }
-import ceylon.io.buffer { ByteBuffer }
+import ceylon.collection {
+    HashMap
+}
+import ceylon.io.buffer {
+    ByteBuffer
+}
+import ceylon.io.charset {
+    Charset
+}
+import ceylon.net.http {
+    CnHeader=Header,
+    ...
+}
+import ceylon.net.http.server {
+    CnRequest=Request,
+    CnResponse=Response
+}
+
+import com.dgwave.lahore.api {
+    ...
+}
 
 class DefaultRequest(CnRequest cnReq) satisfies Request {
 
@@ -40,6 +55,7 @@ class DefaultRequest(CnRequest cnReq) satisfies Request {
         shared actual Iterator<String->String> iterator() => transient.iterator();
         shared actual Boolean equals(Object that) => transient.equals(that);
         shared actual Integer hash => transient.hash;
+        shared actual Boolean defines(Object key) => transient.defines(key);
     }
     
     shared actual String path => cnReq.path;

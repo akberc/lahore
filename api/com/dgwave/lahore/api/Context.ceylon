@@ -10,7 +10,7 @@ shared interface Context {
     shared default String? queryParam(String name) { return null;}	
     shared default String? pathParam(String placeHolder) { return null;}	
 	
-    shared default Data? data { return null;} // incoming form or JSON/XML object
+    shared default Document? data { return null;} // incoming form or JSON/XML object
 
     "Passing parameters between plugins"
     shared default Context passing(String string, Assocable arg)  {return this;}

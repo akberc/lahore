@@ -65,7 +65,7 @@ class Plugins({String+} sitePlugins, SiteRuntime siteRuntime) {
                 }
             }
         } else {
-            log.error("Plugin NOT registered, not found annotation 'id' on: ``pluginClass``");
+            log.error("Plugin NOT registered, not found annotation 'plugin' on: ``cm``");
             return;
         }
     }

@@ -10,10 +10,10 @@ import com.dgwave.lahore.core.component { attachmentCache }
 
 class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {	
     
-    shared actual Data? data {
+    shared actual Document? data {
         Object? o = get("entity");
         if (exists o) {
-            if (is Data o) {
+            if (is Document o) {
                 return o;
             }
         }

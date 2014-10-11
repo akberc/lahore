@@ -4,7 +4,7 @@ import ceylon.language.meta.declaration { Module }
 shared interface Storage {
     shared formal Locator base;
     shared formal Store<Config> configStore(String context, Module mod);
-    shared formal Store<Data> dataStore(String context);
+    shared formal Store<Document> dataStore(String context);
     shared formal Store<Preference> preferenceStore();
 }
 
@@ -36,7 +36,7 @@ shared interface Storable {
     shared formal Integer version;  
 }
 
-shared abstract class Data() satisfies Storable {
+shared abstract class Document() satisfies Storable {
 
     shared formal Basic payLoad;
 }
