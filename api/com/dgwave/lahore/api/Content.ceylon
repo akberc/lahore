@@ -15,6 +15,15 @@ shared interface Binder {
     shared formal String extractClientStyle();
 }
 
+shared interface Renderer {
+
+}
+
+shared interface Styler {
+    
+}
+
+
 shared abstract class ContentType() of 
     textCss | applicationJavascript | applicationJson | imagePng | imageJpg | imageIcon {}
 shared object imageJpg extends ContentType() {

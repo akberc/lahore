@@ -7,9 +7,12 @@ import ceylon.language.meta { modules }
 import ceylon.io.buffer { ByteBuffer, newByteBuffer }
 import ceylon.io { newOpenFile }
 import com.dgwave.lahore.core.component { attachmentCache }
+import java.lang {
+    ByteArray
+}
 
-class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {	
-    
+class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {
+
     shared actual Document? data {
         Object? o = get("entity");
         if (exists o) {
@@ -17,9 +20,9 @@ class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {
                 return o;
             }
         }
-        return null;		
+        return null;
     }
-    
+
     shared actual String? contextParam(String key) {
         Object? o = get(key);
         if (exists o) {
@@ -29,7 +32,7 @@ class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {
         }
         return null;
     }
-    
+
     HashMap<String, String> getAsMap(String key) {
         HashMap<String, String> newMap = HashMap<String, String>();
         Object? o = get(key);
@@ -43,7 +46,7 @@ class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {
         }
         return newMap;// no use
     }
-    
+
     shared actual String pathParam(String key) {
         String? val = getAsMap("pathParam").get(key);
         if (exists val) {
@@ -52,7 +55,7 @@ class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {
             return "";
         }
     }
-    
+
     shared actual String? queryParam(String key) {
         String? val = getAsMap("queryParam").get(key);
         if (exists val) {
@@ -61,7 +64,7 @@ class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {
             return "";
         }
     }
-    
+
     shared void putIntoMap(String mapItem, String key, String item) {
         Object? o = get(mapItem);
         if (exists o) {
@@ -74,18 +77,18 @@ class DefaultWebContext() extends HashMap<String, Object>() satisfies Context {
             put(mapItem, newMap);
         }
     }
-    
+
     shared actual Context passing(String key, Assocable arg) { // TODO scope
         put(key, arg);
         return this;
     }
-    
+
     shared actual Assocable passed(String key) {
         if (is Assocable assocable = get(key)) {
             return assocable;
         }
         return "";
-    }	
+    }
 }
 
 class WebRoute (pluginId, name, methods, String routePath, produce, String? routerPermission = null)  satisfies Route {
@@ -95,7 +98,7 @@ class WebRoute (pluginId, name, methods, String routePath, produce, String? rout
     shared actual String path = routePath;
     shared actual Method<Anything,Content?,[Context]>
             |Function<Content?,[Context, PluginRuntime]> produce;
-    shared actual String string = 
+    shared actual String string =
             "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
 }
 
@@ -104,19 +107,19 @@ class SiteRuntime(site, context, theme) {
     String context;
     Theme theme;
     shared late Plugins plugins;
-    
-    {WebRoute*} routes { 
+
+    {WebRoute*} routes {
         return plugins.routesFor(empty, true);
     }
-    
+
     "Web request/response service"
     shared void siteService (Request req, Response resp) {
-        
-        Boolean isAttachment(Request req) => 
-                req.path.endsWith("css") || 
-                req.path.endsWith("js") || 
+
+        Boolean isAttachment(Request req) =>
+                req.path.endsWith("css") ||
+                req.path.endsWith("js") ||
                 req.path.endsWith("ico");
-        
+
         if (isAttachment(req)) {
             value got = attachmentCache.get(req.path);
             if (exists got) {
@@ -134,17 +137,17 @@ class SiteRuntime(site, context, theme) {
                 return;
             }
         }
-           
+
         // create a new context
-        DefaultWebContext dc = DefaultWebContext(); 
+        DefaultWebContext dc = DefaultWebContext();
         dc.put("path",req.path);
         dc.put("method", req.method.string);
         dc.put("headers", req.headers);
         dc.put("parameters", req.parameters);
         dc.put("request", req); //Kludge for now TODO
-        
+
         String? method = dc.contextParam("method");
-        
+
         WebRoute? rt {
             if (exists method) {
                 return findApplicableRoute(method, req.path.spanFrom(1), dc);
@@ -154,23 +157,23 @@ class SiteRuntime(site, context, theme) {
                 return null;
             }
         }
-        
-        if (exists r = rt,	
-            exists plugin = plugins.plugin(r.pluginId),						
+
+        if (exists r = rt,
+            exists plugin = plugins.plugin(r.pluginId),
             exists content = plugin.produceRoute(dc, r)) {
-            
-            switch(content) 
+
+            switch(content)
             case (is Paged) {
                 value keyMap = HashMap<String, String>();
                 for (tb in content.top.chain(content.bottom)) {
                     if (is Attached tb) {
-                        
-                        String key = context + "/" + plugin.plugin.id + "/" 
+
+                        String key = context + "/" + plugin.plugin.id + "/"
                             + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
-                        
-                        String path = plugin.plugin.info.moduleName.replace(".", "/") + "/" 
+
+                        String path = plugin.plugin.info.moduleName.replace(".", "/") + "/"
                                 + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
-                        
+
                         Resource? resource = modules.find(plugin.plugin.info.moduleName, plugin.plugin.info.moduleVersion)
                             ?.resourceByPath(path);
 
@@ -195,7 +198,7 @@ class SiteRuntime(site, context, theme) {
                                     attachmentCache.put(key, [tb.contentType, byteBuffer]);
                                     keyMap.put(tb.name, key);
                                 } else {
-                                    log.warn("Binary resource file ``fRes.path`` could no be loaded");   
+                                    log.warn("Binary resource file ``fRes.path`` could no be loaded");
                                 }
                             }
 
@@ -209,7 +212,7 @@ class SiteRuntime(site, context, theme) {
 
             } else {
                 resp.withContentType([applicationJson.string, utf8]);
-                resp.writeString(content.string);				
+                resp.writeString(content.string);
             }
         } else {
             if (req.path.equals(context) || req.path.equals(context + "/")) {
@@ -220,16 +223,16 @@ class SiteRuntime(site, context, theme) {
             }
         }
     }
-    
-    "Internal method to find an applicable route given a path"		
+
+    "Internal method to find an applicable route given a path"
     WebRoute? findApplicableRoute(String method, String path, DefaultWebContext dc) {
         log.debug("Looking for route: " + method + " " + path);
         for (r in routes) {
             log.debug("Evaluating route : " + r.string);
-            
+
             {String*} pathSegments = r.path.split((Character ch) => ch == '/');
             {Entry<Integer, String>*} tokens = getPathTokens(pathSegments);
-            
+
             if (!tokens.empty) {
                 value token = tokens.first;
                 if (exists token) {
@@ -254,13 +257,13 @@ class SiteRuntime(site, context, theme) {
                     }
                 }
             }
-            
+
             if (r.methods.any((Methods ms) => ms.method.string == method) && r.path.equals(path)) {
                 return r;
             }
         }
         return null;
-    }		
+    }
 
     {Entry<Integer, String>*} getPathTokens({String*} tokens) {
         {Entry<Integer, String>*} ret = {};
@@ -280,9 +283,9 @@ abstract class Matcher() {
 }
 
 class ParamMatcher(String context) extends Matcher(){
-    
+
     matches(String path) => path.startsWith(context);
-    
+
 }
 
 HashMap<String, SiteRuntime>siteRegistry = HashMap<String, SiteRuntime>();

@@ -8,8 +8,9 @@ module com.dgwave.lahore.core "0.2" {
     import ceylon.collection "1.1.0";
     import ceylon.json "1.1.0";
     import ceylon.logging "1.1.0";
-    
+
     shared import com.dgwave.lahore.api "0.2"; //only one shared
-    
+
     import ceylon.test "1.1.0";
+    import java.base "8";
 }

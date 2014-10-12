@@ -1,21 +1,19 @@
-import com.dgwave.lahore.api { ... }
-import ceylon.logging { logger, Logger }
 import ceylon.language.meta { modules }
 import ceylon.language.meta.declaration { ClassDeclaration, Package }
-import ceylon.file { FileRes=Resource, File, parseURI }
-import ceylon.io { newOpenFile }
-import ceylon.io.buffer { ByteBuffer, newByteBuffer }
-import com.dgwave.lahore.core.component { attachmentCache }
+import ceylon.logging {logger,Logger}
+import com.dgwave.lahore.api { ... }
+import com.dgwave.lahore.core.component { attachmentCache, BinaryResource }
+import ceylon.io.buffer { newByteBuffer }
 
 Logger log = logger(`module com.dgwave.lahore.core`);
 
 shared class Engine(lahoreServers, sites) {
     {Server+} lahoreServers;
     String[] sites;
-    
+
     for (site in sites) { // module already loaded
         value pluginName = site.split((Character ch) => ch == '/');
-        
+
         if (exists cmName = pluginName.first,
             exists cmVersion = pluginName.skip(1).first,
             exists cm = modules.find(cmName, cmVersion),
@@ -34,20 +32,19 @@ shared class Engine(lahoreServers, sites) {
                                     ThemeConfig themeConfig = originalSite.themeConfig;
 
                                     value theme = themeConfig.themeClass.instantiate([], siteContext.context, themeConfig);
-              
+
                                     if (is Theme theme) {
                                         log.trace("Theme found ``theme.id``, now searching for attachments");
                                         for (tb in theme.attachments) {
                                             log.trace("Theme attachment found ``theme.id``, ``tb.string``");
-                                            String key = siteContext.context + "/"  
+                                            String key = siteContext.context + "/"
                                                     + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
-                                            
-                                            String path = themeConfig.themeClass.containingModule.name.replace(".", "/") + "/" 
-                                                + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
-                                            
+
+                                            String path =String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
+
                                             Resource? resource = themeConfig.themeClass.containingModule
                                                     .resourceByPath(path);
-                                            
+
                                             if (exists resource) {
                                                 value contentType = tb.contentType;
                                                 switch (contentType)
@@ -58,40 +55,32 @@ shared class Engine(lahoreServers, sites) {
                                                     }
                                                 }
                                                 case (imageIcon, imageJpg, imagePng) {
-                                                    FileRes fRes = parseURI(resource.uri).resource;
-                                                    if (is File fRes) {
-                                                        value openFile = newOpenFile(fRes);
-                                                        variable Integer available = openFile.size;
-                                                        ByteBuffer byteBuffer = newByteBuffer(available);
-                                                        openFile.read(byteBuffer);
-                                                        byteBuffer.flip();
-                                                        attachmentCache.put(key, [tb.contentType, byteBuffer]);
-                                                    } else {
-                                                        log.warn("Binary resource file ``fRes.path`` could no be loaded");   
-                                                    }
+                                                    BinaryResource bRes = BinaryResource(resource);
+                                                    attachmentCache.put(key, [tb.contentType,
+                                                        bRes.binaryContent() else newByteBuffer(0)]);
                                                 }
                                             } else {
                                                 log.warn("Resource ``tb.name`` could not be found in theme ``theme.id``");
                                             }
                                         }
-                                        
+
                                         value pluginNames = [cm.name + "/" + cm.version].chain(
                                             [for (d in cm.dependencies) d.name + "/" + d.version]
                                         );
                                         log.trace("Site ``site`` uses modules: ``pluginNames``");
 
-                                        value runtimeSite = SiteRuntime(originalSite, siteContext.context, 
+                                        value runtimeSite = SiteRuntime(originalSite, siteContext.context,
                                             theme);
-                                                                               
+
                                         value plugins = Plugins(pluginNames, runtimeSite);
-                                                                               
+
                                         runtimeSite.plugins = plugins;
-                                    
+
                                         siteRegistry.put(cid.qualifiedName, runtimeSite);
                                         log.debug("Added to Site Registry : ``cid.qualifiedName``" );
                                     }
                                 }
-                            }                                 
+                            }
                         }
                     }
                 }

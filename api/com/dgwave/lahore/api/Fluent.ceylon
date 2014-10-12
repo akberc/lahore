@@ -1,10 +1,10 @@
-shared Array array (Assocable* vars) {
-
-    return Array{for (v in vars) v};
+shared Array array(Assocable* vars) {
+    
+    return Array { for (v in vars) v };
 }
 
-shared Assoc assoc (Entry<String, Assocable>* vars) {
-    return Assoc{for (v in vars) v};
+shared Assoc assoc(Entry<String,Assocable>* vars) {
+    return Assoc { for (v in vars) v };
 }
 
 shared String t(String text, {Entry<String,String>*} pairs = {}) {
@@ -17,9 +17,13 @@ shared String t(String text, {Entry<String,String>*} pairs = {}) {
 }
 
 shared String l(String to, String link) {
-    return "<a href=\"/" + link +"\">" + to +"</a>";
+    return "<a href=\"/" + link + "\">" + to + "</a>";
 }
 
 shared String url(String link) {
     return "/" + link;
+}
+
+shared T[] narrow<T>({Anything*} elems) {
+    return [for (elem in elems) if (is T elem) elem];
 }
