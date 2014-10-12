@@ -6,7 +6,8 @@ import ceylon.io.charset { utf8 }
 import ceylon.language.meta { modules }
 import ceylon.io.buffer { ByteBuffer, newByteBuffer }
 import ceylon.io { newOpenFile }
-import com.dgwave.lahore.core.component { attachmentCache }
+import com.dgwave.lahore.core.component { attachmentCache,
+    cacheResource }
 import java.lang {
     ByteArray
 }
@@ -168,43 +169,16 @@ class SiteRuntime(site, context, theme) {
                 for (tb in content.top.chain(content.bottom)) {
                     if (is Attached tb) {
 
-                        String key = context + "/" + plugin.plugin.id + "/"
+                        String key = "``context``/" + plugin.plugin.id + "/"
                             + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
 
-                        String path = plugin.plugin.info.moduleName.replace(".", "/") + "/"
-                                + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
+                        String path = String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
 
                         Resource? resource = modules.find(plugin.plugin.info.moduleName, plugin.plugin.info.moduleVersion)
                             ?.resourceByPath(path);
 
-                        if (exists resource) {
-                            value contentType = tb.contentType;
-                            switch (contentType)
-                            case (textCss, applicationJavascript, applicationJson) {
-                                String? stuff = resource.textContent();
-                                if (exists stuff) {
-                                    attachmentCache.put(key, [tb.contentType, stuff]);
-                                    keyMap.put(tb.name, key);
-                                }
-                            }
-                            case (imageIcon, imageJpg, imagePng) {
-                                FileRes fRes = parseURI(resource.uri).resource;
-                                if (is File fRes) {
-                                    value openFile = newOpenFile(fRes);
-                                    variable Integer available = openFile.size;
-                                    ByteBuffer byteBuffer = newByteBuffer(available);
-                                    openFile.read(byteBuffer);
-                                    byteBuffer.flip();
-                                    attachmentCache.put(key, [tb.contentType, byteBuffer]);
-                                    keyMap.put(tb.name, key);
-                                } else {
-                                    log.warn("Binary resource file ``fRes.path`` could no be loaded");
-                                }
-                            }
-
-                        } else {
-                            log.warn("Resource ``tb.name`` could not be found in module ``plugin.plugin.info.moduleName``");
-                        }
+                        cacheResource(key, tb, resource);
+                        keyMap.put(tb.name, key);
                     }
                 }
                 resp.withContentType(["text/html", utf8]);

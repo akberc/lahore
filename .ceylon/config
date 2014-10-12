@@ -6,6 +6,7 @@ offline=false
 environment=DEV
 logPriority=FINE
 site=com.dgwave.lahore.console/0.2
+site=com.dgwave.lahore.initial/0.2
 
 [compiler]
 source=.\\system
@@ -16,5 +17,3 @@ source=.\\menu
 source=.\\api
 resource=.\\resources
 
-[formattool]
-profile=default
