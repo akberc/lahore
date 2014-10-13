@@ -110,7 +110,10 @@ shared class Engine(lahoreServers, sites) {
 
         String[] tokens = req.path.split('/'.equals).sequence();
         String context = "/``(tokens[1] else "/")``";
-        SiteRuntime? s = siteRegistry.get(context);
-        s?.siteService(req, resp);
+        if (exists s = siteRegistry.get(context)) {
+            s.siteService(req, resp);
+        } else { //unknown context
+            siteRegistry.get("/")?.siteService(req, resp);
+        }
     }
 }

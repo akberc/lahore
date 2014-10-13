@@ -1,10 +1,10 @@
 [defaults]
-encoding=Cp1252
+encoding=UTF-8
 offline=false
 
 [lahore]
 environment=DEV
-logPriority=FINE
+logPriority=WARN
 site=com.dgwave.lahore.console/0.2
 site=com.dgwave.lahore.initial/0.2
 
@@ -17,3 +17,6 @@ source=.\\menu
 source=.\\api
 resource=.\\resources
 
+
+[formattool]
+profile=default
