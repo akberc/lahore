@@ -15,20 +15,20 @@ shared Content helpMain(Context c, PluginRuntime plugin) {
     };
 }
 
-"Prints a page listing general help for a module."  
+"Prints a page listing general help for a module."
 methods(httpGET)
 route("help_page", "admin/help/{name}")
 permission("access administration pages")
 shared Content? helpPage(Context c, PluginRuntime plugin) {
-    String? otherPluginName = c.pathParam("{name}");
+    String? otherPluginName = c.passed("{name}")?.string;
     if (exists otherPluginName) {
         if (plugin.isContributedToBy(otherPluginName)) {
-            
-            value temp = plugin.contributionFrom(otherPluginName, 
+
+            value temp = plugin.contributionFrom(otherPluginName,
                 `function HelpContribution.help`, c.passing("path", "admin/help#" + otherPluginName));
-            
+
             if (exists temp, is Div contr = temp[1]) {
-                return Paged { region = contr;};  
+                return Paged { region = contr;};
             } else {
                 return Paged { region = Div {
                     Span(t("No help is available for module %module.", {"%module" -> otherPluginName}))
@@ -36,11 +36,11 @@ shared Content? helpPage(Context c, PluginRuntime plugin) {
                 };
             }
         }
-        
+
         // How to query another plugin
         Boolean? something = plugin.plugin(otherPluginName)?.providesResource("icon"); // array of assocs
         if (exists something) {
-            
+
         }
     }
     return null;
@@ -54,7 +54,7 @@ Div helpLinksAsList(Context c, PluginRuntime plugin) {
     return Div { classes = ["clearfix"];
             Div { classes = ["help-items"];
                 Ul {
-                    for (mod in impls) Li(l(mod, "admin/help/" + mod)) 
+                    for (mod in impls) Li(l(mod, "admin/help/" + mod))
                 }
             }
         };

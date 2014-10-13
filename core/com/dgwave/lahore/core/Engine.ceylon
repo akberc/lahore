@@ -3,6 +3,12 @@ import ceylon.language.meta.declaration { ClassDeclaration, Package, Module }
 import ceylon.logging {logger,Logger}
 import com.dgwave.lahore.api { ... }
 import com.dgwave.lahore.core.component { ... }
+import ceylon.io.charset {
+    utf8
+}
+import ceylon.io.buffer {
+    ByteBuffer
+}
 
 Logger log = logger(`module com.dgwave.lahore.core`);
 
@@ -34,7 +40,7 @@ shared class Engine(lahoreServers, sites) {
 
             if (is Theme theme) {
                 log.trace("Theme found ``theme.id``, now searching for attachments");
-                cacheAttachments(theme, context, themeConfig);
+                cacheAttachments(theme, context == "/" then "" else context, themeConfig);
 
                 value pluginNames = [cm.name + "/" + cm.version].chain(
                     [for (d in cm.dependencies) d.name + "/" + d.version]
@@ -79,6 +85,29 @@ shared class Engine(lahoreServers, sites) {
     }
 
     shared void siteService(Request req, Response resp) {
+        Boolean isAttachment(Request req) =>
+                req.path.endsWith(".css") || req.path.endsWith(".js") ||
+                req.path.endsWith(".ico") || req.path.endsWith(".jpg") ||
+                req.path.endsWith(".png");
+
+        if (isAttachment(req)) {
+            value got = attachmentCache.get(req.path);
+            if (exists got) {
+                log.debug("Cache hit for ``req.path``");
+                resp.withContentType([got[0].string, utf8]);
+                resp.addHeader("Cache-Control", "max-age=3600");
+                value item = got[1];
+                switch(item)
+                case (is String) {
+                    resp.writeString(item);
+                }
+                case (is ByteBuffer) {
+                    resp.writeByteBuffer(item);
+                }
+                return;
+            }
+        }
+
         String[] tokens = req.path.split('/'.equals).sequence();
         String context = "/``(tokens[1] else "/")``";
         SiteRuntime? s = siteRegistry.get(context);

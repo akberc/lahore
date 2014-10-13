@@ -56,7 +56,7 @@ shared class SystemTheme(String siteContext, SystemThemeConfig config)
     }
 
     shared actual String assemble(Map<String,String> map, Paged tm) {
-
+        String context = siteContext == "/" then "" else siteContext;
         Html page = Html {
             attrs = { "lang"->"en" };
             head = Head {
@@ -65,17 +65,19 @@ shared class SystemTheme(String siteContext, SystemThemeConfig config)
                     Meta({ "http-equiv"->"Content-Type", "content"->"text/html; charset=UTF-8" }),
                     Meta({ "charset"->"utf-8" }),
                     Meta({ "http-equiv"->"X-UA-Compatible", "content"->"IE=edge,chrome=1" })
-                }.chain(narrow<Meta>(tm.top).sequence()).chain({
-                        Link({ "href"->"``siteContext``/css/bootstrap.min.css", "rel"->"stylesheet" }),
-                        Link({ "href"->"``siteContext``/css/style.css", "rel"->"stylesheet" }),
-                        Link({ "href"->"``siteContext``/favicon.ico", "rel"->"icon" })
-                    }).chain({
+                }.chain(
+                    narrow<Meta>(tm.top).sequence()
+                ).chain({
+                        Link({ "href"->"``context``/css/bootstrap.min.css", "rel"->"stylesheet" }),
+                        Link({ "href"->"``context``/css/style.css", "rel"->"stylesheet" }),
+                        Link({ "href"->"``context``/favicon.ico", "rel"->"icon" })
+                }).chain({
                         for (att in narrow<Attached>(tm.top))
                             if (att.contentType == textCss && map.get(att.name) exists)
                                 Link({ "href"->(map.get(att.name) else ""), "rel"->"stylesheet" })
-                    }).chain({
+                }).chain({
                         // script
-                    });
+                });
             };
             body = Body {
                 Div { classes = ["container"]; {
