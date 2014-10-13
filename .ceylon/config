@@ -4,7 +4,7 @@ offline=false
 
 [lahore]
 environment=DEV
-logPriority=WARN
+logPriority=FINE
 site=com.dgwave.lahore.console/0.2
 site=com.dgwave.lahore.initial/0.2
 

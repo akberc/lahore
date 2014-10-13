@@ -198,9 +198,17 @@ String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={})
     }
 
     shared class Li(String | Anchor content, String? id = null, String[] classes = empty, {Entry<String, String>*} attrs = {}) 
-            extends Markup(id, classes, attrs) satisfies ContainedMarkup {
+            extends Markup(id, classes, attrs) satisfies ContainerMarkup & ContainedMarkup {
         shared actual String element = "li";
-        shared actual String containedContent = content.string;	
+        shared actual variable String containedContent = ""; 
+        shared actual variable {Markup*} containedFragments = {};
+        switch (content)
+        case (is String) {
+            containedContent = content; 
+        }
+        case (is Anchor) {
+            containedFragments = {content};
+        }
     }
 
     shared class Anchor(String content, String? id, String[] classes, {Entry<String, String>*} attrs) 
@@ -217,7 +225,7 @@ String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={})
     }
 
     shared Button button(String content, Boolean enabled = true, String? id = null, String* classes) {
-        return Button ("", content, "", "", enabled, id, classes.sequence(), {} );
+        return Button (content, "", "", "", enabled, id, classes.sequence(), {} );
     }
 
     shared Anchor a(String href, String content, {Entry<String, String>*} other={}, String? id = null, String[] classes = empty) {

@@ -4,6 +4,10 @@ import ceylon.language.meta.model { Method, Function }
 import ceylon.io.charset { utf8 }
 import ceylon.language.meta { modules }
 import com.dgwave.lahore.core.component { cacheResource }
+import ceylon.language.meta.declaration {
+
+	FunctionDeclaration
+}
 
 class WebContext(request) extends HashMap<String, Assocable>() satisfies Context {
 
@@ -35,8 +39,8 @@ class WebRoute (pluginId, name, methods, String routePath, produce, String? rout
             "Web Route: from ``pluginId`` with name ``name`` : ``methods`` on ``routePath``";
 }
 
-class SiteRuntime(site, context, theme) {
-    shared Site site;
+class SiteRuntime(site, context, theme) satisfies Dispatcher {
+    Site site;
     String context;
     Theme theme;
     shared late Plugins plugins;
@@ -126,6 +130,12 @@ class SiteRuntime(site, context, theme) {
             return null;
         }
     }
+    
+    shared actual Content produceRoute(
+        FunctionDeclaration functionDeclaration, {<String->String>*} pass) {
+        return Paged(Div {}, {}, {} );
+    }
+    
 }
 
 HashMap<String, SiteRuntime>siteRegistry = HashMap<String, SiteRuntime>();

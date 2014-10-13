@@ -80,10 +80,11 @@ shared class SystemTheme(String siteContext, SystemThemeConfig config)
                 });
             };
             body = Body {
+                children = {
                 Div { classes = ["container"]; {
                         Div { classes = ["row"]; {
                                 Div { classes = ["span12"]; id = "header";
-                                    SystemThemeHeader(H1("Lahore"))
+                                    SystemThemeHeader(H1(narrow<PageTitle>(tm.top).first?.containedContent else "Lahore"))
                                 }
                             }; },
                         Div { classes = ["row"]; {
@@ -105,6 +106,7 @@ shared class SystemTheme(String siteContext, SystemThemeConfig config)
                                 }
                             }; }
                     }; } // container
+                }.chain(narrow<Script>(tm.bottom).sequence());
             }; // body
         };
 

@@ -19,11 +19,10 @@ shared class Engine(lahoreServers, sites) {
     void cacheAttachments(Theme theme, String context, ThemeConfig themeConfig) {
         for (tb in theme.attachments) {
             log.trace("Theme attachment found ``theme.id``, ``tb.string``");
-            String key = context + "/"
-                    + String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
-
+            
             String path =String(tb.pathInModule.skipWhile((Character c) =>"/\\".contains(c)));
-
+            String key = context + "/" + path;
+            
             Resource? resource = themeConfig.themeClass.containingModule
                     .resourceByPath(path);
 

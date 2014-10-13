@@ -1,7 +1,13 @@
 import com.dgwave.lahore.api { ... }
 import com.dgwave.lahore.system_theme { SystemThemeConfig }
 
+
+shared class ConsolePlugin() satisfies Plugin {
+	
+}
+
 shared class ConsoleSite() satisfies Site {
+	shared late actual Dispatcher dispatcher;
 
     shared actual {Resource*} resources = {
 

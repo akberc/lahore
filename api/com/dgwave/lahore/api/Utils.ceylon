@@ -88,7 +88,7 @@ shared abstract class Printer(Boolean pretty = false) {
     
     "Prints a `String`"
     shared default void printString(String s) {
-        print("\"");
+        //print("\"");
         for (c in s) {
             if (c == '"') {
                 print("\\" + "\"");
@@ -106,11 +106,15 @@ shared abstract class Printer(Boolean pretty = false) {
                 print("\\" + "r");
             } else if (c == 9.character) {
                 print("\\" + "t");
+            } else if (c == '<') {
+                print("&lt;");
+            } else if (c == '>') {
+                print("&gt;");
             } else {
                 print(c.string);
             }
         }
-        print("\"");
+        //print("\"");
     }
     
     "Prints an `Integer`"
@@ -159,22 +163,37 @@ shared abstract class Printer(Boolean pretty = false) {
     shared default void printMarkup(Markup markup) {
         indent();
         printHtmlElementOpen(markup.element, markup.id, markup.classes, markup.attrs);
+        
+        Boolean hasContent = {
+            if (is ContainedMarkup markup,
+                markup.containedContent != "") true}.first else false;
+        
+        if (is ContainerMarkup markup) {
+            if (!hasContent) {
+            	if (!markup.containedFragments.empty) {          	
+		            print(">");
+		            enter();
+		            for (c in markup.containedFragments) {
+		                printMarkup(c);
+		            }
+		            leave();
+		            indent();
+		            print("</" + markup.element + ">");
+		            return;
+	        	} else {
+	        		print("></" + markup.element + ">");
+	        	}
+	        }
+        } 
+        
         if (is ContainedMarkup markup) {
             if (!"" == markup.containedContent) {
                 print(">");
-                print(markup.containedContent + "</" + markup.element + ">");
+                printString(markup.containedContent);
+                print("</" + markup.element + ">");
             } else {
                 print("/>");
             }
-        } else if (is ContainerMarkup markup) {
-            print(">");
-            enter();
-            for (c in markup.containedFragments) {
-                printMarkup(c);
-            }
-            leave();
-            indent();
-            print("</" + markup.element + ">");
         }
     }
     
@@ -187,8 +206,8 @@ shared abstract class Printer(Boolean pretty = false) {
         }
         
         if (!classes.empty) {
-            print(" class=\"");
-            for (cls in classes) {
+            print(" class=\"" + (classes.first else ""));
+            for (cls in classes.skip(1)) {
                 print(" " + cls);
             }
             print("\"");

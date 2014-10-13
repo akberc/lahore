@@ -1,14 +1,21 @@
 import ceylon.collection { LinkedList }
-import com.dgwave.lahore.api { Request, Response, PluginInfo }
+import com.dgwave.lahore.api { ... }
 
-shared void console(Request request, Response response) {
-    HtmlBuilder htmlPage = HtmlBuilder("/admin.site");
-    htmlPage.addToServers({}); // TODO
-    htmlPage.addToSites(emptyMap); // TODO
-    htmlPage.refreshPlugins();
-    htmlPage.refreshConsole();
-    response.writeString(htmlPage.html().render());
+"Prints a page listing a glossary of terms."
+methods(httpGET)
+route("console_main", "admin/console")
+permission("access console")
+shared Content consoleMain(Context c, PluginRuntime plugin) {
+	return Paged {
+		top= {PageTitle("Lahore Console")};
+		region = tabs;
+		bottom = {
+			Script ({"src" -> "/admin/js/jquery-1.10.2.min.js"}),
+			Script ({"src" -> "/admin/js/bootstrap.min.js"})   
+		};
+	};
 }
+
 
 LinkedList<String> consoleHistory = LinkedList<String>();
 

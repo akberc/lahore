@@ -1,5 +1,9 @@
 import ceylon.io.charset { Charset }
 import ceylon.io.buffer { ByteBuffer }
+import ceylon.language.meta.declaration {
+
+	FunctionDeclaration
+}
 
 "A server container that presents system services to Core"
 shared interface Server {
@@ -12,6 +16,13 @@ shared interface Server {
     shared formal void loadModule(String modName, String modVersion);
 
     shared formal Boolean booted;
+}
+
+"A shared and safe view of the runtime site"
+shared interface Dispatcher {
+	shared formal Content produceRoute(
+		FunctionDeclaration functionDeclaration, {Entry<String, String>*} pass);
+	
 }
 
 "A site that has a context, configures plugins and a theme,
@@ -33,6 +44,8 @@ shared interface Site {
     shared default Region page403 => Div({Span("Not Authorized")});
     shared default Region page500 => Div({Span("Internal Error")});
     shared default Region pageHome => Div({Span("Home Page")});
+    
+    shared formal Dispatcher dispatcher;
 }
 
 shared interface Request {

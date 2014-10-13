@@ -54,7 +54,7 @@ Div helpLinksAsList(Context c, PluginRuntime plugin) {
     return Div { classes = ["clearfix"];
             Div { classes = ["help-items"];
                 Ul {
-                    for (mod in impls) Li(l(mod, "admin/help/" + mod))
+                    for (mod in impls) Li(a("help/" + mod, mod))
                 }
             }
         };
