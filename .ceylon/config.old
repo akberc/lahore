@@ -17,3 +17,6 @@ source=.\\menu
 source=.\\api
 resource=.\\resources
 
+
+[formattool]
+profile=default

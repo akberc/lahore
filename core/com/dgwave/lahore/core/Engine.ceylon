@@ -15,7 +15,7 @@ Logger log = logger(`module com.dgwave.lahore.core`);
 shared class Engine(lahoreServers, sites) {
     {Server+} lahoreServers;
     String[] sites;
-
+    
     void cacheAttachments(Theme theme, String context, ThemeConfig themeConfig) {
         for (tb in theme.attachments) {
             log.trace("Theme attachment found ``theme.id``, ``tb.string``");
@@ -25,43 +25,44 @@ shared class Engine(lahoreServers, sites) {
             
             Resource? resource = themeConfig.themeClass.containingModule
                     .resourceByPath(path);
-
+            
             cacheResource(key, tb, resource);
         }
     }
-
+    
     void loadSite(ClassDeclaration cid, String context, Module cm) {
         value originalSite = cid.instantiate([]);
         if (is Site originalSite) {
             ThemeConfig themeConfig = originalSite.themeConfig;
-
+            
             value theme = themeConfig.themeClass.instantiate([], context, themeConfig);
-
+            
             if (is Theme theme) {
                 log.trace("Theme found ``theme.id``, now searching for attachments");
                 cacheAttachments(theme, context == "/" then "" else context, themeConfig);
-
+                
                 value pluginNames = [cm.name + "/" + cm.version].chain(
                     [for (d in cm.dependencies) d.name + "/" + d.version]
                 );
                 log.trace("Site ``site`` uses modules: ``pluginNames``");
-
+                
                 value runtimeSite = SiteRuntime(originalSite, context, theme);
-
+                
                 value plugins = Plugins(pluginNames, runtimeSite);
-
+                
                 runtimeSite.plugins = plugins;
-
+                
                 siteRegistry.put(context, runtimeSite);
                 log.debug("Added to Site Registry : ``cid.qualifiedName``" );
             }
         }
     }
-
+    
     for (site in sites) { // module already loaded
         value pluginName = site.split((Character ch) => ch == '/');
-
-        if (exists cmName = pluginName.first,
+        
+        if (exists cmName = pluginName.skip(0).first, // kludge
+            cmName != "", // split can return empty string 
             exists cmVersion = pluginName.skip(1).first,
             exists cm = modules.find(cmName, cmVersion),
             exists pluginType = cm.annotations<Type>().first?.pluginType,
@@ -82,13 +83,13 @@ shared class Engine(lahoreServers, sites) {
             }
         }
     }
-
+    
     shared void siteService(Request req, Response resp) {
         Boolean isAttachment(Request req) =>
                 req.path.endsWith(".css") || req.path.endsWith(".js") ||
                 req.path.endsWith(".ico") || req.path.endsWith(".jpg") ||
                 req.path.endsWith(".png");
-
+        
         if (isAttachment(req)) {
             value got = attachmentCache.get(req.path);
             if (exists got) {
@@ -106,7 +107,7 @@ shared class Engine(lahoreServers, sites) {
                 return;
             }
         }
-
+        
         String[] tokens = req.path.split('/'.equals).sequence();
         String context = "/``(tokens[1] else "/")``";
         if (exists s = siteRegistry.get(context)) {

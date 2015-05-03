@@ -8,8 +8,8 @@ plugin(themes)
 name("System Theme")
 description("Handles general site configuration for administrators.")
 module com.dgwave.lahore.system_theme "0.2" {
-    import ceylon.collection "1.1.0";
-    import ceylon.logging "1.1.0";
+    import ceylon.collection "1.1.1";
+    import ceylon.logging "1.1.1";
     
     shared import com.dgwave.lahore.api "0.2";
     import com.dgwave.lahore.menu "0.2";

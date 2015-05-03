@@ -8,7 +8,7 @@ plugin(routes)
 name("Menu")
 description("Allows administrators to customize the site navigation menu.")
 module com.dgwave.lahore.menu "0.2" {
-    import ceylon.collection "1.1.0";
+    import ceylon.collection "1.1.1";
     shared import com.dgwave.lahore.api "0.2";
     shared import com.dgwave.lahore.help "0.2";
 }

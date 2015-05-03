@@ -23,7 +23,7 @@ shared void run() {
     
     /* Add a console writer for the entire JVM */
     addLogWriter {
-        void log(Priority p, Category c, String m, Exception? e) {
+        void log(Priority p, Category c, String m, Throwable? e) {
             if (p <= info) {
                 process.writeLine ("[``now()``] ``p.string`` ``c.name``  ``m``");
             } else {
