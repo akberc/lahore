@@ -100,7 +100,7 @@ shared abstract class AssocConfig(assoc = Assoc()) extends Config() {
         }
     }
     
-    String[] filterStrings(Array a) { 
+    String[] filterStrings(ArrayL a) { 
         value sb = ArrayList<String>(); 
         for (ae in a) {
             if (is String ae) {

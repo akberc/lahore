@@ -2,10 +2,12 @@ import ceylon.collection {
     HashMap
 }
 import ceylon.io.buffer {
-    ByteBuffer
+    ByteBuffer,
+    newByteBufferWithData
 }
 import ceylon.io.charset {
-    Charset
+    Charset,
+    utf8
 }
 import ceylon.net.http {
     CnHeader=Header,
@@ -72,15 +74,21 @@ class DefaultResponse(Request req, CnResponse cnRes) satisfies Response {
         cnRes.responseStatus = status;
     }
     
-    shared actual void withContentType([String, Charset] cType) {
-        cnRes.addHeader(contentType(cType[0], cType[1]));
+    shared actual void withContentType(ContentType cType) {
+        switch(cType)
+        case (applicationJavascript | applicationJson | textHtml | textCss) {
+            cnRes.addHeader(contentType(cType.string, utf8));
+        }
+        else {
+            cnRes.addHeader(contentType(cType.string));
+        }
     }
     
     shared actual void writeString(String write) {
         cnRes.writeString(write);
     }
   
-    shared actual void writeByteBuffer(ByteBuffer buffer) {
-        cnRes.writeByteBuffer(buffer);
+    shared actual void writeBytes(Array<Byte> bytes) {
+        cnRes.writeByteBuffer(newByteBufferWithData(*bytes));
     }
 }

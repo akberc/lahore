@@ -1,6 +1,6 @@
 import ceylon.collection { ... }
 
-shared alias Assocable => String|Boolean|Integer|Float|Assoc|Array;
+shared alias Assocable => String|Boolean|Integer|Float|Assoc|ArrayL;
 
 shared class Assoc({Entry<String, Assocable>*} values = {}) 
 		extends HashMap<String, Assocable> (linked, Hashtable(), values) {
@@ -26,9 +26,9 @@ shared class Assoc({Entry<String, Assocable>*} values = {})
 		}
 	}
 	
-	shared Array? getArray(String key) {
+	shared ArrayL? getArray(String key) {
 		if (exists item = get(key),
-			is Array item) {
+			is ArrayL item) {
 			return item;
 		} else {
 			return null;
@@ -45,7 +45,7 @@ shared class Assoc({Entry<String, Assocable>*} values = {})
 	}
 }
 
-shared class Array({Assocable*} values = {}) extends LinkedList<Assocable>(values) {
+shared class ArrayL({Assocable*} values = {}) extends LinkedList<Assocable>(values) {
 
     shared actual String string {
         StringPrinter p = StringPrinter();

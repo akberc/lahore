@@ -1,5 +1,3 @@
-import ceylon.io.charset { Charset }
-import ceylon.io.buffer { ByteBuffer }
 import ceylon.language.meta.declaration {
 
 	FunctionDeclaration
@@ -45,7 +43,7 @@ shared interface Site {
     shared default Region page500 => Div({Span("Internal Error")});
     shared default Region pageHome => Div({Span("Home Page")});
     
-    shared formal Dispatcher dispatcher;
+    shared formal variable Dispatcher dispatcher;
 }
 
 shared interface Request {
@@ -58,10 +56,10 @@ shared interface Request {
 
 shared interface Response {
     shared formal void addHeader(String name, String* vals);
-    shared formal void withContentType([String, Charset] contentType);
+    shared formal void withContentType(ContentType contentType);
     shared formal void withStatus(Integer status);
     shared formal void writeString(String write);
-    shared formal void writeByteBuffer(ByteBuffer item);
+    shared formal void writeBytes(Array<Byte> item);
 }
 
 shared interface Session {

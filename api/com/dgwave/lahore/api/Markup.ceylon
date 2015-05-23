@@ -137,17 +137,26 @@ String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={})
         shared actual {Markup*} containedFragments = cells;
     }
 
-    shared class Td(String | {Markup*} content) extends Markup() satisfies ContainerMarkup & ContainedMarkup { // yes, TDs are special 
-        shared actual String element = "td";
-        shared actual variable String containedContent = ""; 
-        shared actual variable {Markup*} containedFragments = {};
+    shared abstract class Both(String|{Markup+}|Markup content) extends Markup() satisfies ContainerMarkup & ContainedMarkup {
+        shared actual String containedContent; 
+        shared actual {Markup*} containedFragments;
         switch (content)
         case (is String) {
-            containedContent = content; 
+            containedContent = content; containedFragments = {};
         }
-        case (is {Markup*}) {
-            containedFragments = content;
+        case (is Markup) {
+            containedFragments = {content}; containedContent = "";
         }
+        else {
+
+            containedFragments = content; containedContent = "";
+
+        }
+
+    }
+    
+    shared class Td(String | {Markup+} content) extends Both(content) {
+        shared actual String element = "td";
     }
 
     shared class Th(String content) extends Markup() satisfies ContainedMarkup { 
@@ -155,13 +164,12 @@ String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={})
         shared actual String containedContent = content;
     }
 
-    shared abstract class Heading(String el, String content, String? id, String[] classes, {Entry<String, String>*} attrs={}) 
-            extends Markup(id, classes, attrs) satisfies ContainedMarkup {
+    shared abstract class Heading(String el, String | Markup content, String? id, String[] classes, {Entry<String, String>*} attrs={}) 
+            extends Both(content) satisfies ContainerMarkup {
         shared actual String element = el;
-        shared actual String containedContent = content;
     }
 
-    shared class H1(String content, String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={}) 
+    shared class H1(String | Anchor content, String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={}) 
             extends Heading("h1", content, id, classes, attrs) satisfies ContainedMarkup {}
 
     shared class H2(String content, String? id = null, String[] classes = empty, {Entry<String, String>*} attrs={}) 

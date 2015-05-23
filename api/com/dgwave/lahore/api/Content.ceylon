@@ -25,7 +25,7 @@ shared interface Styler {
 
 
 shared abstract class ContentType() of
-    textCss | applicationJavascript | applicationJson | imagePng | imageJpg | imageIcon {}
+    textHtml | textCss | applicationJavascript | applicationJson | imagePng | imageJpg | imageIcon {}
 shared object imageJpg extends ContentType() {
     shared actual String string => "image/jpg";
 }
@@ -50,10 +50,14 @@ shared object textCss extends ContentType() {
     shared actual String string => "text/css";
 }
 
+shared object textHtml extends ContentType() {
+    shared actual String string => "text/html";
+}
+
 shared abstract class Content() of
     JsonObject | JsonArray | Paged | Status {
     shared default Boolean cacheable => false;
-}
+}
 shared abstract class Status(shared Integer code, shared String message) extends Content() {
 
 }

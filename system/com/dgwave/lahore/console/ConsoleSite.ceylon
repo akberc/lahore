@@ -7,7 +7,7 @@ shared class ConsolePlugin() satisfies Plugin {
 }
 
 shared class ConsoleSite() satisfies Site {
-	shared late actual Dispatcher dispatcher;
+	shared late actual variable Dispatcher dispatcher;
 
     shared actual {Resource*} resources = {
 

@@ -1,7 +1,7 @@
 import ceylon.language.meta.declaration { ClassDeclaration, Module }
 import ceylon.language.meta { typeLiteral, type }
 
-"Valid values in [[Assoc]] and [[Array]]"
+"Valid values in [[Assoc]] and [[ArrayL]]"
 shared alias Primitive => String|Integer|Float|Boolean;
 
 " This should be injectable into plugin providers"

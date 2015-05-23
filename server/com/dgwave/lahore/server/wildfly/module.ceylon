@@ -2,6 +2,7 @@ by ("Akber Choudhry")
 doc ("Lahore port to Ceylon.")
 license ("Apache 2.0 License - Copyright 2013-2014 Digiwave Systems Ltd. (http://www.dgwave.com/)")
 
+native("jvm")
 module com.dgwave.lahore.server.wildfly "0.2" {
     //shared import javax.servlet.api "main";
     shared import java.base "7";

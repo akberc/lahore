@@ -2,7 +2,7 @@ import ceylon.test { ... }
 
 "Run tests for static global methods for Lahore"
 test void testMethods(){
-    variable Array arr = array();
+    variable ArrayL arr = array();
     variable StringPrinter p = StringPrinter();
     p.printArray(arr);
     assertEquals("[]", p.string);

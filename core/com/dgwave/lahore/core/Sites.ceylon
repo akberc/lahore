@@ -1,7 +1,6 @@
 import com.dgwave.lahore.api { ... }
 import ceylon.collection { HashMap }
 import ceylon.language.meta.model { Method, Function }
-import ceylon.io.charset { utf8 }
 import ceylon.language.meta { modules }
 import com.dgwave.lahore.core.component { cacheResource }
 import ceylon.language.meta.declaration {
@@ -77,19 +76,19 @@ class SiteRuntime(site, context, theme) satisfies Dispatcher {
                         keyMap.put(tb.name, key);
                     }
                 }
-                resp.withContentType(["text/html", utf8]);
+                resp.withContentType(textHtml);
                 resp.writeString(theme.assemble(keyMap, content));
             }
             case (is Status) {
                 resp.withStatus(content.code);
                 resp.writeString(content.message);
             } else {
-                resp.withContentType([applicationJson.string, utf8]);
+                resp.withContentType(applicationJson);
                 resp.writeString(content.string);
             }
         } else {
             if (req.path.equals(context) || req.path.equals(context + "/")) {
-                resp.withContentType(["text/html", utf8]);
+                resp.withContentType(textHtml);
                 resp.writeString(theme.assemble(keyMap, Paged(site.pageHome, {})));
             } else {
                 resp.withStatus(404);

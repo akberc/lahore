@@ -6,7 +6,7 @@ import com.dgwave.lahore.help {
 }
 
 shared class InitialSite() satisfies Site {
-	shared late actual Dispatcher dispatcher;
+	shared late actual variable Dispatcher dispatcher;
 	
     shared actual {Resource*} resources = {
 
@@ -21,10 +21,10 @@ shared class InitialSite() satisfies Site {
     });
     
     shared actual Region pageHome {
-			return Div ({}.chain(narrow<ContainerMarkup>({
-            dispatcher.produceRoute(`function HelpContribution.help`,
-    			{"path"->"admin/help"})
-        	}).sequence())
-    		);
-		}
+        return Div (
+            { dispatcher.produceRoute(`function HelpContribution.help`,
+    			     {"path"->"admin/help"})
+            }.narrow<ContainerMarkup>()
+        );
+    }
 }

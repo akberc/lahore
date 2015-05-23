@@ -66,7 +66,7 @@ shared abstract class Printer(Boolean pretty = false) {
     }
     
     "Prints an `Array`"
-    shared default void printArray(Array o) {
+    shared default void printArray(ArrayL o) {
         print("[");
         enter();
         variable Boolean once = true;
@@ -154,7 +154,7 @@ shared abstract class Printer(Boolean pretty = false) {
         case (is Assoc) {
             printAssoc(val);
         }
-        case (is Array) {
+        case (is ArrayL) {
             printArray(val);
         }
     }
@@ -164,9 +164,9 @@ shared abstract class Printer(Boolean pretty = false) {
         indent();
         printHtmlElementOpen(markup.element, markup.id, markup.classes, markup.attrs);
         
-        Boolean hasContent = {
+        Boolean hasContent = 
             if (is ContainedMarkup markup,
-                markup.containedContent != "") true}.first else false;
+                markup.containedContent != "") then true else false;
         
         if (is ContainerMarkup markup) {
             if (!hasContent) {

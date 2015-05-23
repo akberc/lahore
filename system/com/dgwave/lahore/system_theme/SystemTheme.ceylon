@@ -60,19 +60,19 @@ shared class SystemTheme(String siteContext, SystemThemeConfig config)
         Html page = Html {
             attrs = { "lang"->"en" };
             head = Head {
-                title = narrow<PageTitle>(tm.top).first else PageTitle("Lahore");
+                title = tm.top.narrow<PageTitle>().first else PageTitle("Lahore");
                 children = {
                     Meta({ "http-equiv"->"Content-Type", "content"->"text/html; charset=UTF-8" }),
                     Meta({ "charset"->"utf-8" }),
                     Meta({ "http-equiv"->"X-UA-Compatible", "content"->"IE=edge,chrome=1" })
                 }.chain(
-                    narrow<Meta>(tm.top).sequence()
+                    tm.top.narrow<Meta>()
                 ).chain({
                         Link({ "href"->"``context``/css/bootstrap.min.css", "rel"->"stylesheet" }),
                         Link({ "href"->"``context``/css/style.css", "rel"->"stylesheet" }),
                         Link({ "href"->"``context``/favicon.ico", "rel"->"icon" })
                 }).chain({
-                        for (att in narrow<Attached>(tm.top))
+                        for (att in tm.top.narrow<Attached>())
                             if (att.contentType == textCss && map.get(att.name) exists)
                                 Link({ "href"->(map.get(att.name) else ""), "rel"->"stylesheet" })
                 }).chain({
@@ -84,7 +84,7 @@ shared class SystemTheme(String siteContext, SystemThemeConfig config)
                 Div { classes = ["container"]; {
                         Div { classes = ["row"]; {
                                 Div { classes = ["span12"]; id = "header";
-                                    SystemThemeHeader(H1(narrow<PageTitle>(tm.top).first?.containedContent else "Lahore"))
+                                    SystemThemeHeader(H1(a(siteContext, tm.top.narrow<PageTitle>().first?.containedContent else "Lahore")))
                                 }
                             }; },
                         Div { classes = ["row"]; {
@@ -93,7 +93,7 @@ shared class SystemTheme(String siteContext, SystemThemeConfig config)
                                 },
                                 Div { classes = ["span8"]; id = "content";
                                     (tm.region is Div)
-                                            then SystemThemeMain(narrow<Div>({ tm.region }).first else Div { })
+                                            then SystemThemeMain({ tm.region }.narrow<Div>().first else Div { })
                                             else tm.region
                                 },
                                 Div { classes = ["span2"]; id = "aside2";
@@ -106,7 +106,7 @@ shared class SystemTheme(String siteContext, SystemThemeConfig config)
                                 }
                             }; }
                     }; } // container
-                }.chain(narrow<Script>(tm.bottom).sequence());
+                }.chain(tm.bottom.narrow<Script>().sequence());
             }; // body
         };
 

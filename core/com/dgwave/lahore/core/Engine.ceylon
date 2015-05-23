@@ -3,12 +3,6 @@ import ceylon.language.meta.declaration { ClassDeclaration, Package, Module }
 import ceylon.logging {logger,Logger}
 import com.dgwave.lahore.api { ... }
 import com.dgwave.lahore.core.component { ... }
-import ceylon.io.charset {
-    utf8
-}
-import ceylon.io.buffer {
-    ByteBuffer
-}
 
 Logger log = logger(`module com.dgwave.lahore.core`);
 
@@ -51,6 +45,7 @@ shared class Engine(lahoreServers, sites) {
                 value plugins = Plugins(pluginNames, runtimeSite);
                 
                 runtimeSite.plugins = plugins;
+                originalSite.dispatcher = runtimeSite;
                 
                 siteRegistry.put(context, runtimeSite);
                 log.debug("Added to Site Registry : ``cid.qualifiedName``" );
@@ -94,15 +89,15 @@ shared class Engine(lahoreServers, sites) {
             value got = attachmentCache.get(req.path);
             if (exists got) {
                 log.debug("Cache hit for ``req.path``");
-                resp.withContentType([got[0].string, utf8]);
+                resp.withContentType(got[0]);
                 resp.addHeader("Cache-Control", "max-age=3600");
                 value item = got[1];
                 switch(item)
                 case (is String) {
                     resp.writeString(item);
                 }
-                case (is ByteBuffer) {
-                    resp.writeByteBuffer(item);
+                case (is Array<Byte>) {
+                    resp.writeBytes(item);
                 }
                 return;
             }

@@ -1,6 +1,5 @@
 import java.lang { ByteArray }
 import java.util.zip { ZipFile }
-import ceylon.io.buffer { ByteBuffer, newByteBufferWithData }
 import ceylon.file { parseURI }
 
 shared class BinaryResource(Resource res) satisfies Resource {
@@ -12,7 +11,7 @@ shared class BinaryResource(Resource res) satisfies Resource {
 
     shared actual String uri => res.uri;
 
-    shared ByteBuffer? binaryContent() {
+    shared Array<Byte>? binaryContent() {
         try (Zip zip = Zip(String(res.uri.sublistTo(
             (res.uri.lastInclusion("!") else 1) - 1))) ) {
 
@@ -34,11 +33,11 @@ class Zip(String uri) satisfies Obtainable {
 
     }
 
-    shared ByteBuffer bytes(String internalPath) {
+    shared Array<Byte> bytes(String internalPath) {
         value entry = file.getEntry(internalPath);
         value byt = ByteArray(entry.size);
         file.getInputStream(entry).read(byt);
-        return newByteBufferWithData(*byt.byteArray);
+        return byt.byteArray;
     }
 
     shared actual void release(Throwable? error) {
